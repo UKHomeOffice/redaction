@@ -1,0 +1,234 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+
+	<!-- project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+		xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"> 
+		<modelVersion>4.0.0</modelVersion> <groupId>pontus-hbase-coprocessor</groupId> 
+		<artifactId>pontus-hbase-coprocessor-atlas</artifactId> <version>0.0.1-SNAPSHOT</version> 
+		<packaging>jar</packaging> <name>pontus-hbase-coprocessor-atlas</name> <properties> 
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding> <hbase.version>1.1.4</hbase.version> 
+		</properties> <repositories> <repository> <id>HDP repos</id> <url>http://repo.hortonworks.com/content/groups/public/</url> 
+		</repository> </repositories> <dependencies> <dependency> <groupId>junit</groupId> 
+		<artifactId>junit</artifactId> <version>4.10</version> <scope>test</scope> 
+		</dependency> <dependency> <groupId>org.apache.kafka</groupId> <artifactId>kafka-clients</artifactId> 
+		<version>0.10.0.1</version> </dependency> <dependency> <groupId>org.apache.hbase</groupId> 
+		<artifactId>hbase-common</artifactId> <version>${hbase.version}</version> 
+		<exclusions> <exclusion> <artifactId>jdk.tools</artifactId> <groupId>jdk.tools</groupId> 
+		</exclusion> </exclusions> </dependency> <dependency> <groupId>org.apache.hbase</groupId> 
+		<artifactId>hbase-client</artifactId> <version>${hbase.version}</version> 
+		<exclusions> <exclusion> <artifactId>jdk.tools</artifactId> <groupId>jdk.tools</groupId> 
+		</exclusion> </exclusions> </dependency> <dependency> <groupId>org.apache.hbase</groupId> 
+		<artifactId>hbase-server</artifactId> <version>${hbase.version}</version> 
+		<exclusions> <exclusion> <artifactId>jdk.tools</artifactId> <groupId>jdk.tools</groupId> 
+		</exclusion> </exclusions> </dependency> </dependencies> <build> <plugins> 
+		<plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-compiler-plugin</artifactId> 
+		<version>2.3.2</version> <configuration> <source>1.7</source> <target>1.7</target> 
+		<compilerArgument>-Xlint:all</compilerArgument> <showWarnings>true</showWarnings> 
+		<showDeprecation>false</showDeprecation> </configuration> </plugin> </plugins> 
+		</build> </project -->
+
+
+
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>pontus-redaction</groupId>
+	<artifactId>pontus-redaction</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+    <modules>
+        <module>pontus-redaction-elastic-2.x-searchguard</module>
+        <module>pontus-redaction-elastic-5.x-searchguard</module>
+        <module>pontus-redaction-elastic-2.x-shield</module>
+
+<!-- LPPM - temporarily disable this to make Jenkins build -->
+        <!--<module>pontus-redaction-elastic-5.x-shield</module>-->
+<!-- LPPM - temporarily disable this to make Jenkins build -->
+		<!--<module>pontus-redaction-elastic-2.x-shield-plugin</module>-->
+
+        <module>pontus-redaction-common</module>
+		<module>pontus-redaction-hbase-coproc</module>
+
+<!-- These won't be needed when we use Active Directory -->
+        <!--<module>elastic-2.x-shield-kerberos-realm</module>-->
+        <!--<module>elastic-5.x-shield-kerberos-realm</module>-->
+
+	</modules>
+    <packaging>pom</packaging>
+
+	<name>pontus-redaction</name>
+
+
+	<properties>
+
+		<redaction.version>0.0.1-SNAPSHOT</redaction.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+		<provided.scope>provided</provided.scope>
+
+		<hdp.version>2.5.0.0-1245</hdp.version>
+
+		<hadoop.version>2.7.3</hadoop.version>
+		<!--<hadoop.version>2.5.1</hadoop.version>-->
+
+		<hbase.version>1.1.2</hbase.version>
+		<!--<hbase.version>1.2.3</hbase.version>-->
+
+		<kafka.version>0.10.0</kafka.version>
+
+		<storm.version>1.0.1</storm.version>
+
+		<phoenix.version>4.7.0</phoenix.version>
+
+		<!--<es.version>2.4.1</es.version>-->
+		<es.version>5.0.2</es.version>
+
+        <solr.version>6.3.0</solr.version>
+		<os.detection.classifierWithLikes>fedora</os.detection.classifierWithLikes>
+
+	</properties>
+
+
+	<pluginRepositories>
+
+	</pluginRepositories>
+
+	<repositories>
+
+		<repository>
+
+			<releases>
+
+				<enabled>true</enabled>
+
+				<updatePolicy>always</updatePolicy>
+
+				<checksumPolicy>warn</checksumPolicy>
+
+			</releases>
+
+			<snapshots>
+
+				<enabled>false</enabled>
+
+				<updatePolicy>never</updatePolicy>
+
+				<checksumPolicy>fail</checksumPolicy>
+
+			</snapshots>
+
+			<id>HDPReleases</id>
+
+			<name>HDP Releases</name>
+
+			<url>http://repo.hortonworks.com/content/repositories/releases/</url>
+
+			<layout>default</layout>
+
+		</repository>
+
+		<repository>
+
+			<releases>
+
+				<enabled>true</enabled>
+
+				<updatePolicy>always</updatePolicy>
+
+				<checksumPolicy>warn</checksumPolicy>
+
+			</releases>
+
+			<snapshots>
+
+				<enabled>true</enabled>
+
+				<updatePolicy>never</updatePolicy>
+
+				<checksumPolicy>fail</checksumPolicy>
+
+			</snapshots>
+
+			<id>HDPPublic</id>
+
+			<name>HDP Public</name>
+
+			<url>http://repo.hortonworks.com/content/repositories/public/</url>
+
+			<layout>default</layout>
+
+		</repository>
+
+	</repositories>
+
+
+
+	<build>
+		<sourceDirectory>src/main/java</sourceDirectory>
+
+		<testSourceDirectory>src/test/java</testSourceDirectory>
+
+		<resources>
+
+			<resource>
+
+				<directory>${basedir}/multilang</directory>
+
+			</resource>
+
+		</resources>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.3.2</version>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+					<compilerArgument>-Xlint:all</compilerArgument>
+					<showWarnings>true</showWarnings>
+					<showDeprecation>false</showDeprecation>
+				</configuration>
+			</plugin>
+
+			<!--<plugin>-->
+				<!--<groupId>org.apache.maven.plugins</groupId>-->
+				<!--<artifactId>maven-shade-plugin</artifactId>-->
+				<!--<version>2.4.3</version>-->
+				<!--<executions>-->
+					<!--<execution>-->
+						<!--<phase>package</phase>-->
+						<!--<goals>-->
+							<!--<goal>shade</goal>-->
+						<!--</goals>-->
+						<!--<configuration>-->
+							<!--<filters>-->
+								<!--<filter>-->
+									<!--<artifact>*:*</artifact>-->
+									<!--<excludes>-->
+										<!--<exclude>META-INF/*.SF</exclude>-->
+										<!--<exclude>META-INF/*.DSA</exclude>-->
+										<!--<exclude>META-INF/*.RSA</exclude>-->
+                                    <!--</excludes>-->
+								<!--</filter>-->
+							<!--</filters>-->
+							<!--<transformers>-->
+								<!--<transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>-->
+								<!--<transformer-->
+										<!--implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">-->
+									<!--<mainClass>de.test.cmd.Main</mainClass>-->
+								<!--</transformer>-->
+							<!--</transformers>-->
+						<!--</configuration>-->
+					<!--</execution>-->
+				<!--</executions>-->
+			<!--</plugin>-->
+			<!-- plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-shade-plugin</artifactId> 
+				<version>2.4.3</version> <executions> <execution> <phase>package</phase> 
+				<goals> <goal>shade</goal> </goals> <configuration> <artifactSet> <excludes> 
+				<exclude>classworlds:classworlds</exclude> <exclude>junit:junit</exclude> 
+				<exclude>jmock:*</exclude> <exclude>*:xml-apis</exclude> <exclude>org.apache.maven:lib:tests</exclude> 
+				<exclude>log4j:log4j:jar:</exclude> </excludes> </artifactSet> </configuration> 
+				</execution> </executions> </plugin -->
+		</plugins>
+	</build>
+</project>
+ 

@@ -1,0 +1,23 @@
+searchguard.kerberos.krb5_filepath: /etc/krb5.conf
+searchguard.kerberos.acceptor_keytab_filepath: /etc/security/keytabs/HTTP.sandbox.hortonworks.com.keytab
+searchguard.kerberos.acceptor_principal: HTTP/sandbox.hortonworks.com@YOUR_REALM_GOES_HERE
+searchguard.ssl.transport.enabled: true
+searchguard.ssl.transport.keystore_filepath: CN=localhost-keystore.jks
+searchguard.ssl.transport.keystore_password: 7bf985c6005ec24dbe6f
+searchguard.ssl.transport.truststore_filepath: truststore.jks
+searchguard.ssl.transport.truststore_password: 5ad771e520d2e1e19225
+searchguard.ssl.transport.enforce_hostname_verification: false
+searchguard.ssl.http.enabled: true
+searchguard.ssl.http.keystore_filepath: CN=localhost-keystore.jks
+searchguard.ssl.http.keystore_password: 7bf985c6005ec24dbe6f
+searchguard.ssl.http.truststore_filepath: truststore.jks
+searchguard.ssl.http.truststore_password: 5ad771e520d2e1e19225
+searchguard.audit.type: internal_elasticsearch
+searchguard.authcz.admin_dn:
+  - CN=Leo Martins,OU=Dev,O=Pontus,L=London,ST=Unknown,C=UK
+  - CN=sgadmin
+http.port: 9090
+cluster.name: pontus
+network.host: 172.17.0.2
+
+path.logs: /opt/elasticsearch/logs

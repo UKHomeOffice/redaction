@@ -1,0 +1,6 @@
+/target/
+.idea/
+pontus-redaction-common/target/*
+*/target/*
+*/dependency-reduced-pom.xml
+*/*.iml

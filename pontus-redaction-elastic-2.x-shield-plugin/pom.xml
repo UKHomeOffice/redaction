@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <!--<parent>-->
+    <!--<artifactId>pontus-redaction</artifactId>-->
+    <!--<groupId>pontus-redaction</groupId>-->
+    <!--<version>${redaction.version}</version>-->
+    <!--<relativePath>../</relativePath>-->
+
+    <!--</parent>-->
+
+    <parent>
+        <groupId>org.elasticsearch.plugin</groupId>
+        <artifactId>plugins</artifactId>
+        <version>2.4.2</version>
+    </parent>
+
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>pontus-redaction-elastic</groupId>
+    <artifactId>pontus-redaction-elastic-2.x-shield-plugin</artifactId>
+
+    <properties>
+
+        <!--<es.version>2.4.1</es.version>-->
+        <elasticsearch.version>2.4.2</elasticsearch.version>
+        <elasticsearch.plugin.classname>uk.gov.homeoffice.pontus.ElasticSearchFilterPlugin</elasticsearch.plugin.classname>
+        <elasticsearch.plugin.isolated>false</elasticsearch.plugin.isolated>
+        <plugins.list>license,shield,elasticsearch-shield-kerberos-realm,pontus-redaction-elastic-2.x-shield</plugins.list>
+        <xlint.options>-Xlint:-rawtypes</xlint.options>
+        <skip.integ.tests>true</skip.integ.tests>
+
+
+        <redaction.version>0.0.1-SNAPSHOT</redaction.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <provided.scope>provided</provided.scope>
+
+    </properties>
+
+
+    <repositories>
+        <repository>
+            <id>oss-snapshots</id>
+            <name>Sonatype OSS Snapshots</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>elasticsearch-releases</id>
+            <url>http://maven.elasticsearch.org/releases</url>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>daily</updatePolicy>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>jspresso.org</id>
+            <url>http://repository.jspresso.org/maven2/</url>
+        </repository>
+
+
+
+    </repositories>
+
+
+
+    <dependencies>
+
+        <dependency>
+            <groupId>pontus-redaction-elastic</groupId>
+            <artifactId>pontus-redaction-elastic-2.x-shield</artifactId>
+            <version>${redaction.version}</version>
+        </dependency>
+
+
+    </dependencies>
+
+
+    <build>
+        <sourceDirectory>src/main/java</sourceDirectory>
+
+        <testSourceDirectory>src/test/java</testSourceDirectory>
+        <!--<extensions>-->
+        <!--<extension>-->
+        <!--<groupId>kr.motd.maven</groupId>-->
+        <!--<artifactId>os-maven-plugin</artifactId>-->
+        <!--<version>1.4.0.Final</version>-->
+        <!--</extension>-->
+        <!--</extensions>-->
+        <resources>
+
+            <resource>
+
+                <directory>${basedir}/multilang</directory>
+
+            </resource>
+
+        </resources>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.3.2</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                    <compilerArgument>-Xlint:all</compilerArgument>
+                    <showWarnings>true</showWarnings>
+                    <showDeprecation>false</showDeprecation>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.6</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>integ-setup-dependencies</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${skip.integ.tests}</skip>
+                            <useBaseVersion>true</useBaseVersion>
+                            <outputDirectory>${integ.deps}/plugins</outputDirectory>
+
+                            <artifactItems>
+                                <!-- elasticsearch distribution -->
+                                <artifactItem>
+                                    <groupId>org.elasticsearch.distribution.zip</groupId>
+                                    <artifactId>elasticsearch</artifactId>
+                                    <version>${elasticsearch.version}</version>
+                                    <type>zip</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>${integ.deps}</outputDirectory>
+                                </artifactItem>
+
+                                <!-- commercial plugins -->
+                                <!--<artifactItem>-->
+                                <!--<groupId>org.elasticsearch.plugin</groupId>-->
+                                <!--<artifactId>license</artifactId>-->
+                                <!--<version>${elasticsearch.version}</version>-->
+                                <!--<type>zip</type>-->
+                                <!--<overWrite>true</overWrite>-->
+                                <!--</artifactItem>-->
+
+                                <!--<artifactItem>-->
+                                <!--<groupId>org.elasticsearch.plugin</groupId>-->
+                                <!--<artifactId>shield</artifactId>-->
+                                <!--<version>${elasticsearch.version}</version>-->
+                                <!--<type>zip</type>-->
+                                <!--<overWrite>true</overWrite>-->
+                                <!--</artifactItem>-->
+
+                                <!-- this project's zip -->
+                                <artifactItem>
+                                    <groupId>${project.groupId}</groupId>
+                                    <artifactId>${project.artifactId}</artifactId>
+                                    <version>${project.version}</version>
+                                    <type>zip</type>
+                                    <overWrite>true</overWrite>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>check-license</id>
+                        <phase>none</phase>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>ant-contrib</groupId>
+                        <artifactId>ant-contrib</artifactId>
+                        <version>1.0b3</version>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>ant</groupId>
+                                <artifactId>ant</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.apache.ant</groupId>
+                        <artifactId>ant-nodeps</artifactId>
+                        <version>1.8.1</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+            <plugin>
+                <groupId>com.mycila</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <configuration>
+                    <header>com/mycila/maven/plugin/license/templates/APACHE-2.txt</header>
+                    <properties>
+                    </properties>
+                    <excludes>
+                        <exclude>**/*</exclude>
+                    </excludes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.eluder.coveralls</groupId>
+                <artifactId>coveralls-maven-plugin</artifactId>
+                <version>4.1.0</version>
+            </plugin>
+        </plugins>
+    </build>
+
+
+</project>
