@@ -35,9 +35,9 @@
 	<artifactId>pontus-redaction</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
     <modules>
-        <module>pontus-redaction-elastic-2.x-searchguard</module>
+        <!--module>pontus-redaction-elastic-2.x-searchguard</module -->
         <module>pontus-redaction-elastic-5.x-searchguard</module>
-        <module>pontus-redaction-elastic-2.x-shield</module>
+        <!-- module>pontus-redaction-elastic-2.x-shield</module -->
 
 <!-- LPPM - temporarily disable this to make Jenkins build -->
         <!--<module>pontus-redaction-elastic-5.x-shield</module>-->
