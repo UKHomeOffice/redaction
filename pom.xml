@@ -35,11 +35,11 @@
 	<artifactId>pontus-redaction</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
     <modules>
-        <module>pontus-redaction-elastic-2.x-searchguard</module>
+        <!-- module>pontus-redaction-elastic-2.x-searchguard</module -->
         <module>pontus-redaction-elastic-5.x-searchguard</module>
-        <module>pontus-redaction-elastic-2.x-shield</module>
-
 <!-- LPPM - temporarily disable this to make Jenkins build -->
+        <!--module>pontus-redaction-elastic-2.x-shield</module -->
+
         <!--<module>pontus-redaction-elastic-5.x-shield</module>-->
 <!-- LPPM - temporarily disable this to make Jenkins build -->
 		<!--<module>pontus-redaction-elastic-2.x-shield-plugin</module>-->
@@ -79,7 +79,7 @@
 		<phoenix.version>4.7.0</phoenix.version>
 
 		<!--<es.version>2.4.1</es.version>-->
-		<es.version>5.0.2</es.version>
+		<es.version>5.6.3</es.version>
 
         <solr.version>6.3.0</solr.version>
 		<os.detection.classifierWithLikes>fedora</os.detection.classifierWithLikes>
