@@ -236,8 +236,9 @@ public class PoleSecurityCoprocessor extends BaseMasterAndRegionObserver
         while (it.hasNext()) {
             Cell cell = it.next();
             try {
-                String val = Bytes.toString(cell.getValueArray(), cell.getValueOffset(), cell.getValueLength());
-                if (filterData.needRedactionJre(val)) {
+                String qualifier = Bytes.toString(cell.getQualifierArray(), cell.getQualifierOffset(), cell.getQualifierLength());
+//                String val = Bytes.toString(cell.getValueArray(), cell.getValueOffset(), cell.getValueLength());
+                if (filterData.needRedactionJre(qualifier)) {
                     it.remove();
                 }
 
