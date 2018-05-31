@@ -86,7 +86,7 @@ public class JWTStoreClient {
 
     public static void main(String[] args) throws IOException, InterruptedException, KeeperException {
 
-        if (args.length != 2) {
+        if (args.length != 1) {
             System.err.printf("This utility sets the JWT json for a user\n\nUsage: java ... <json with JWT>\n\n");
             System.err.printf("Example:\n\n java ...  '{ \"sub\":\"hbase\", \"bizctx\":\"/uk.police/investigator\"}'\n\n\n");
 
