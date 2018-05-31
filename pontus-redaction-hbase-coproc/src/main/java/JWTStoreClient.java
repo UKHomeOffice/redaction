@@ -94,13 +94,13 @@ public class JWTStoreClient {
         }
 
 
-        JWTClaim sampleClaim = JWTClaim.fromJson(args[0]);
+        JWTClaim sampleClaim = JWTClaim.fromJson(args[1]);
 
         StringBuffer strBuf = new StringBuffer(JWTStore.JWT_ZK_PATH_DEFVAL).append("/").append(sampleClaim.getSub());
 
         JWTStoreClient cli = new JWTStoreClient();
 
-        cli.connect("localhost");
+        cli.connect(System.getProperty("pontus.redaction.zk","localhost"));
 
         if (cli.exists(strBuf.toString()) == null) {
             cli.create(strBuf.toString(), args[0].getBytes());
