@@ -69,7 +69,7 @@ public class PolicyStore extends Thread {
   protected boolean exitHdfsNotifier = false;
   protected LruHashMap<Namespace, FilterData> securityNamespaceCache;
   protected Set<String> affectedDirs = new HashSet<>();
-  protected HdfsAdmin admin = null;
+//  protected HdfsAdmin admin = null;
   protected DFSInotifyEventInputStream eventStream = null;
   protected StringBuffer strBuf = new StringBuffer();
   protected String topicStr;
@@ -81,7 +81,7 @@ public class PolicyStore extends Thread {
     this.config = conf;
 
 
-    String urlStr = config.get("hbase.rootdir", "hdfs://sandbox.hortonworks.com:8020/apps/hbase/data");
+    String urlStr = config.get( "pontus.redaction.policy.store.uri",    config.get("hbase.rootdir", "hdfs://sandbox.hortonworks.com:8020/apps/hbase/data"));
     if (urlStr.startsWith("/")){
       urlStr = "file://"+urlStr;
     }
@@ -100,7 +100,7 @@ public class PolicyStore extends Thread {
     int maxSize = config.getInt(SECURITY_NAMESPACE_CACHE_MAX_SIZE, SECURITY_NAMESPACE_CACHE_DEFAULT_MAX_SIZE);
     this.securityNamespaceCache = new LruHashMap<>(initSize, loadFactor, maxSize);
 
-    this.admin = new HdfsAdmin(uri, config);
+//    this.admin = new HdfsAdmin(uri, config);
 
   }
 

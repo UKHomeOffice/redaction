@@ -330,6 +330,8 @@ public class PoleSecurityCoprocessor extends BaseMasterAndRegionObserver
         Configuration config = new Configuration(false);
         config.addResource(new Path("/usr/hdp/current/hadoop-client/conf/core-site.xml"));
         config.addResource(new Path("/usr/hdp/current/hadoop-client/conf/hdfs-site.xml"));
+        config.addResource(new Path("/opt/pontus/pontus-hbase/current/conf/core-site.xml"));
+        config.addResource(new Path("/opt/pontus/pontus-hbase/current/conf/hdfs-site.xml"));
 
         conf.add(config);
 
