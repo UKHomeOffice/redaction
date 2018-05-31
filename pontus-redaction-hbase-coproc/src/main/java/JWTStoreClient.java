@@ -88,13 +88,13 @@ public class JWTStoreClient {
 
         if (args.length != 2) {
             System.err.printf("This utility sets the JWT json for a user\n\nUsage: java ... <json with JWT>\n\n");
-            System.err.printf("Example:\n\n java ... hbase '{ \"sub\":\"hbase\", \"bizctx\":\"/uk.police/investigator\"}'\n\n\n");
+            System.err.printf("Example:\n\n java ...  '{ \"sub\":\"hbase\", \"bizctx\":\"/uk.police/investigator\"}'\n\n\n");
 
             System.exit(-1);
         }
 
 
-        JWTClaim sampleClaim = JWTClaim.fromJson(args[1]);
+        JWTClaim sampleClaim = JWTClaim.fromJson(args[0]);
 
         StringBuffer strBuf = new StringBuffer(JWTStore.JWT_ZK_PATH_DEFVAL).append("/").append(sampleClaim.getSub());
 
