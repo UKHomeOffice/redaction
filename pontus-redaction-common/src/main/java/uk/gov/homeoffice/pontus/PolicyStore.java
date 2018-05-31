@@ -81,7 +81,11 @@ public class PolicyStore extends Thread {
     this.config = conf;
 
 
-    this.uri = URI.create(config.get("hbase.rootdir", "hdfs://sandbox.hortonworks.com:8020/apps/hbase/data"));
+    String urlStr = config.get("hbase.rootdir", "hdfs://sandbox.hortonworks.com:8020/apps/hbase/data");
+    if (urlStr.startsWith("/")){
+      urlStr = "file://"+urlStr;
+    }
+    this.uri = URI.create(urlStr);
 
     config.set("fs.hdfs.impl", "org.apache.hadoop.hdfs.DistributedFileSystem");
     config.set("fs.file.impl", "org.apache.hadoop.fs.LocalFileSystem");
