@@ -115,6 +115,12 @@
             <!--<version>${hbase.version}</version>-->
             <exclusions>
                 <exclusion>
+                    <groupId>org.apache.zookeeper</groupId>
+                    <artifactId>zookeeper</artifactId>
+                </exclusion>
+
+
+                <exclusion>
                     <artifactId>jdk.tools</artifactId>
                     <groupId>jdk.tools</groupId>
                 </exclusion>
