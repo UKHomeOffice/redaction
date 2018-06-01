@@ -88,14 +88,24 @@
             <!--<version>${hbase.version}</version>-->
             <exclusions>
                 <exclusion>
+                    <groupId>org.apache.zookeeper</groupId>
+                    <artifactId>zookeeper</artifactId>
+                </exclusion>
+                <exclusion>
                     <artifactId>jdk.tools</artifactId>
                     <groupId>jdk.tools</groupId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.codehaus.jackson</groupId>
-
                     <artifactId>jackson-jaxrs</artifactId>
-
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.jackson</groupId>
+                    <artifactId>jackson-xc</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.jackson</groupId>
+                    <artifactId>jackson-jackson-mapper-asl</artifactId>
                 </exclusion>
 
                 <exclusion>
