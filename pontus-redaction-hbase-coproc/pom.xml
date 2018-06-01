@@ -19,6 +19,14 @@
             <groupId>org.janusgraph</groupId>
             <artifactId>janusgraph-core</artifactId>
             <version>100.2.0-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>commons-configuration</artifactId>
+                    <groupId>commons-configuration</groupId>
+                </exclusion>
+
+            </exclusions>
+
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
@@ -26,12 +34,13 @@
             <version>4.5.2</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-common</artifactId>
-            <version>${hadoop.version}.${hdp.version}</version>
-            <!--<version>${hadoop.version}</version>-->
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>org.apache.hadoop</groupId>-->
+            <!--<artifactId>hadoop-common</artifactId>-->
+            <!--<version>${hadoop.version}.${hdp.version}</version>-->
+            <!--&lt;!&ndash;<version>${hadoop.version}</version>&ndash;&gt;-->
+
+        <!--</dependency>-->
 
         <dependency>
             <groupId>org.apache.hadoop</groupId>
