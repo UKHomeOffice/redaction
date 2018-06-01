@@ -483,6 +483,7 @@ public class ElasticSearchFilter implements ActionFilter {
         }
         SearchHits hits = sr.getHits();
         InternalSearchHits intHits = null;
+
         if (hits != null) {
 
             SearchHit[] hitsArray = hits.getHits();
