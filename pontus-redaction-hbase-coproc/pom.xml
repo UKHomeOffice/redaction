@@ -93,8 +93,10 @@
                 </exclusion>
 
                 <exclusion>
-                    <artifactId>org.codehaus.jackson</artifactId>
-                    <groupId>jackson-core-asl</groupId>
+                    <groupId>org.codehaus.jackson</groupId>
+
+                    <artifactId>jackson-core-asl</artifactId>
+
                 </exclusion>
 
             </exclusions>
