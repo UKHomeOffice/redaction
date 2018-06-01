@@ -91,6 +91,12 @@
                     <artifactId>jdk.tools</artifactId>
                     <groupId>jdk.tools</groupId>
                 </exclusion>
+
+                <exclusion>
+                    <artifactId>org.codehaus.jackson</artifactId>
+                    <groupId>jackson-core-asl</groupId>
+                </exclusion>
+
             </exclusions>
         </dependency>
 
