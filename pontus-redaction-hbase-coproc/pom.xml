@@ -32,6 +32,14 @@
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
             <version>4.5.2</version>
+            <exclusions>
+
+            <exclusion>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-log4j12</artifactId>
+            </exclusion>
+
+            </exclusions>
         </dependency>
 
         <!--<dependency>-->
@@ -46,6 +54,13 @@
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-hdfs</artifactId>
             <version>${hadoop.version}.${hdp.version}</version>
+            <exclusions>
+
+            <exclusion>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-log4j12</artifactId>
+            </exclusion>
+            </exclusions>
             <!--<version>${hadoop.version}</version>-->
         </dependency>
 
@@ -78,6 +93,14 @@
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka-clients</artifactId>
             <version>${kafka.version}.${hdp.version}</version>
+            <exclusions>
+
+            <exclusion>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-log4j12</artifactId>
+            </exclusion>
+            </exclusions>
+
         </dependency>
 
 
@@ -87,6 +110,12 @@
             <version>${hbase.version}.${hdp.version}</version>
             <!--<version>${hbase.version}</version>-->
             <exclusions>
+
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+
                 <exclusion>
                     <groupId>org.apache.zookeeper</groupId>
                     <artifactId>zookeeper</artifactId>
@@ -124,6 +153,12 @@
             <version>${hbase.version}.${hdp.version}</version>
             <!--<version>${hbase.version}</version>-->
             <exclusions>
+
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+
                 <exclusion>
                     <groupId>org.apache.zookeeper</groupId>
                     <artifactId>zookeeper</artifactId>
@@ -142,6 +177,12 @@
             <version>${hbase.version}.${hdp.version}</version>
             <!--<version>${hbase.version}</version>-->
             <exclusions>
+
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+
                 <exclusion>
                     <artifactId>jdk.tools</artifactId>
                     <groupId>jdk.tools</groupId>
