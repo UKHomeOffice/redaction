@@ -91,6 +91,12 @@
                     <artifactId>jdk.tools</artifactId>
                     <groupId>jdk.tools</groupId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.jackson</groupId>
+
+                    <artifactId>jackson-jaxrs</artifactId>
+
+                </exclusion>
 
                 <exclusion>
                     <groupId>org.codehaus.jackson</groupId>
