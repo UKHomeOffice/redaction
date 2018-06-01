@@ -24,7 +24,7 @@ import org.apache.hadoop.hbase.wal.WALKey;
 import org.apache.zookeeper.KeeperException;
 import uk.gov.homeoffice.pontus.*;
 import uk.gov.homeoffice.pontus.kafka.KafkaConnectorSingleton;
-import uk.gov.homeoffice.pontus.solr.SolrConnectorSingleton;
+
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -43,7 +43,7 @@ public class PoleSecurityCoprocessor extends BaseMasterAndRegionObserver
     protected JWTStore jwtStore = null;
     protected UserProvider userProvider;
     //    protected ElasticConnectorSingleton elastic;
-    protected SolrConnectorSingleton solr;
+//    protected SolrConnectorSingleton solr;
     protected KafkaConnectorSingleton kafka;
 
 
