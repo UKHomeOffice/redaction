@@ -134,7 +134,7 @@
                 </exclusion>
                 <exclusion>
                     <groupId>org.codehaus.jackson</groupId>
-                    <artifactId>jackson-jackson-mapper-asl</artifactId>
+                    <artifactId>jackson-mapper-asl</artifactId>
                 </exclusion>
 
                 <exclusion>
