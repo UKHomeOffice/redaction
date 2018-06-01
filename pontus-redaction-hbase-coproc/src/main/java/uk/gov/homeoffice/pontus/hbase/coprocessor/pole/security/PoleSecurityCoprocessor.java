@@ -238,6 +238,8 @@ public class PoleSecurityCoprocessor extends BaseMasterAndRegionObserver
             try {
                 String qualifier = Bytes.toStringBinary(cell.getQualifierArray(), cell.getQualifierOffset(), cell.getQualifierLength());
                 String val = Bytes.toStringBinary(cell.getValueArray(), cell.getValueOffset(), cell.getValueLength());
+                String val2 = org.janusgraph.util.encoding.StringEncoding.readAsciiString(cell.getValueArray(), cell.getValueOffset());
+
                 if (filterData.needRedactionJre(val)) {
                     it.remove();
                 }
