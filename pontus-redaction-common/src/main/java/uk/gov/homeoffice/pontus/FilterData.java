@@ -104,6 +104,7 @@ public class FilterData implements HeapSize {
   private String redactionAllowedStr;
   private String redactionDeniedStr;
   private String redactionDeniedAllStr;
+  private String columnRulesStr;
 
   private String redactionElasticPostFilterQueryStr;
 
@@ -258,10 +259,14 @@ public class FilterData implements HeapSize {
 
 
   }
+  public String getColumnRulesStr (){
+    return this.columnRulesStr;
+  }
 
 
   public void setColumnRulesStr(String columnRulesStr) {
 
+    this.columnRulesStr = columnRulesStr;
 
     ObjectMapper mapper = new ObjectMapper();
     try
