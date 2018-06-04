@@ -196,9 +196,9 @@ public class FilterData implements HeapSize {
     }
     return !(
            (".*".equals(redactionAllowedStr) ||   jreRedactionAllowed.matches(val))
-      &&   (tag != null && jreMetadataTagRegex.matches (tag))
-      && ! (".*".equals(redactionAllowedStr) ||   jreRedactionDenied.matches(val) )
-      && ! (".*".equals(redactionAllowedStr) ||   jreRedactionDeniedAll.matches(val)) );
+      &&   (tag == null || jreMetadataTagRegex == null || jreMetadataTagRegex.matches (tag))
+      && ! ( jreRedactionDenied.matches(val) )
+      && ! ( jreRedactionDeniedAll.matches(val)) );
   }
 
   public boolean needRedaction(String val) {
