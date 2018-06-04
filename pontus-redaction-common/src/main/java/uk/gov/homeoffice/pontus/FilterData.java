@@ -11,13 +11,39 @@ import kmy.regex.tree.CharSet;
 import kmy.regex.tree.RNode;
 import kmy.regex.util.Regex;
 import kmy.regex.util.RegexRefiller;
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.map.ObjectMapper;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
  * Created by leo on 16/10/2016.
  */
+
 public class FilterData implements HeapSize {
+
+
+  public enum RedactionType {
+    FILTER,
+    REDACT_BLANK,
+    REDACT_REPLACE
+
+  }
+
+
+//  public class FilterDataReadColumnRule {
+//    Long redactionDeltaTimeMs =  -1L;
+//    String regexStr = ".*";
+//    String tagRegexStr =  ".*";
+//    RedactionType redactionType = RedactionType.REDACT_REPLACE;
+//
+//  }
+
+
+
 
   public static final String REPLACEMENT_VAL = "[REDACTED]";
 
@@ -59,21 +85,22 @@ public class FilterData implements HeapSize {
 
     return re;
   }
+  public FilterData getReadColumnRules(String qualifier)
+  {
+    return columnRules.get(qualifier);
+  }
+
 
   public void setRedactionType(String redactionType) {
     this.redactionType = RedactionType.valueOf(redactionType);
   }
 
-  static enum RedactionType {
-    FILTER,
-    REDACT_BLANK,
-    REDACT_REPLACE
 
-  }
 
+  public HashMap<String, FilterData> columnRules = new HashMap<>();
 
   private RedactionType redactionType = RedactionType.FILTER;
-  private String metadataRegexStr;
+  private String metadataTagRegexStr;
   private String redactionAllowedStr;
   private String redactionDeniedStr;
   private String redactionDeniedAllStr;
@@ -89,38 +116,39 @@ public class FilterData implements HeapSize {
   private Automaton dkbAutoRedactionDenied;
   private Automaton dkbAutoRedactionDeniedAll;
 
+  private Long deltaTime;
 //
 //    private Regex kmyMetadataRegex;
 //    private Regex kmyRedactionAllowed;
 //    private Regex kmyRedactionDenied;
 //    private Regex kmyRedactionDeniedAll;
 
-  private jregex.Pattern jreMetadataRegex;
+  private jregex.Pattern jreMetadataTagRegex;
   private jregex.Pattern jreRedactionAllowed;
   private jregex.Pattern jreRedactionDenied;
   private jregex.Pattern jreRedactionDeniedAll;
 
 
-  private Pattern metadataRegex;
+  private Pattern metadataTagRegex;
   private Pattern redactionAllowed;
   private Pattern redactionDenied;
   private Pattern redactionDeniedAll;
 
   public FilterData() {
-    this.metadataRegexStr = null;
+    this.metadataTagRegexStr = null;
     this.redactionAllowedStr = null;
     this.redactionDeniedStr = null;
     this.redactionDeniedAllStr = null;
     this.redactionElasticPostFilterQueryStr = null;
-    this.metadataRegex = null;
+    this.metadataTagRegex = null;
     this.redactionAllowed = null;
     this.redactionDenied = null;
     this.redactionDeniedAll = null;
     this.redactionType = RedactionType.FILTER;
   }
 
-  public FilterData(String metadataRegexStr, String redactionAllowedStr, String redactionDeniedStr, String redactionDeniedAllStr, String redactionTypeStr, String redactionElasticPostFilterQueryStr) {
-    this.setMetadataRegexStr(metadataRegexStr);
+  public FilterData(String columnRulesJsonStr, String redactionAllowedStr, String redactionDeniedStr, String redactionDeniedAllStr, String redactionTypeStr, String redactionElasticPostFilterQueryStr) {
+    this.setColumnRulesStr(columnRulesJsonStr);
     this.setRedactionAllowedStr(redactionAllowedStr);
     this.setRedactionDeniedStr(redactionDeniedStr);
     this.setRedactionDeniedAllStr(redactionDeniedAllStr);
@@ -128,9 +156,19 @@ public class FilterData implements HeapSize {
     this.setRedactionElasticPostFilterQueryStr(redactionElasticPostFilterQueryStr);
   }
 
+  public FilterData(String redactionAllowedStr, String redactionDeniedStr, String redactionDeniedAllStr, String redactionTypeStr, Long deltaTime, String tagsStr) {
+    this.setRedactionAllowedStr(redactionAllowedStr);
+    this.setRedactionDeniedStr(redactionDeniedStr);
+    this.setRedactionDeniedAllStr(redactionDeniedAllStr);
+    this.setMetadataTagRegexStr(tagsStr);
+    this.setRedactionType(redactionTypeStr);
+    this.deltaTime = deltaTime;
+
+  }
+
   @Override
   public long heapSize() {
-    return ((metadataRegex == null) ? 0 : metadataRegex.pattern().length()) +
+    return ((metadataTagRegex == null) ? 0 : metadataTagRegex.pattern().length()) +
       ((redactionAllowed == null) ? 0 : redactionAllowed.pattern().length()) +
       ((redactionDenied == null) ? 0 : redactionDenied.pattern().length()) +
       ((redactionDeniedAll == null) ? 0 : redactionDeniedAll.pattern().length() +
@@ -149,10 +187,17 @@ public class FilterData implements HeapSize {
 //                && !kmyRedactionDeniedAll.matches(val));
 //    }
 
-  public boolean needRedactionJre(String val) {
-    return !(jreRedactionAllowed.matches(val)
-      && !jreRedactionDenied.matches(val)
-      && !jreRedactionDeniedAll.matches(val));
+
+
+  public boolean needRedactionJre(String val, long timeStamp, long currTime, String tag) {
+    if (currTime - timeStamp > this.deltaTime){
+      return true;
+    }
+    return !(
+           (".*".equals(redactionAllowedStr) ||   jreRedactionAllowed.matches(val))
+      &&   (tag != null && jreMetadataTagRegex.matches (tag))
+      && ! (".*".equals(redactionAllowedStr) ||   jreRedactionDenied.matches(val) )
+      && ! (".*".equals(redactionAllowedStr) ||   jreRedactionDeniedAll.matches(val)) );
   }
 
   public boolean needRedaction(String val) {
@@ -169,11 +214,11 @@ public class FilterData implements HeapSize {
 
 
   public boolean metaDataMatches(String metadataStr) {
-    return metadataRegex.matcher(metadataStr).matches();
+    return metadataTagRegex.matcher(metadataStr).matches();
   }
 
   public boolean metaDataMatchesJre(String metadataStr) {
-    return jreMetadataRegex.matcher(metadataStr).matches();
+    return jreMetadataTagRegex.matcher(metadataStr).matches();
   }
 //    public boolean metaDataMatchesKmy(String metadataStr) {
 //        return kmyMetadataRegex.matches(metadataStr);
@@ -192,26 +237,83 @@ public class FilterData implements HeapSize {
   }
 
 
-  public String getMetadataRegexStr() {
-    return metadataRegexStr;
+  public String getMetadataTagRegexStr() {
+    return metadataTagRegexStr;
   }
 
-  public void setMetadataRegexStr(String metadataRegexStr) {
-    this.metadataRegexStr = metadataRegexStr;
-    this.metadataRegex = Pattern.compile(metadataRegexStr, Pattern.DOTALL);
-    this.jreMetadataRegex = new jregex.Pattern(metadataRegexStr, jregex.Pattern.DOTALL);
+  public void setMetadataTagRegexStr(String metadataTagRegexStr) {
+    if (metadataTagRegexStr == null) {
+      this.metadataTagRegexStr = "(?!x)x"; // match nothing.
+    }
+    else {
+      this.metadataTagRegexStr = metadataTagRegexStr;
+    }
+    this.metadataTagRegex = Pattern.compile(this.metadataTagRegexStr, Pattern.DOTALL);
+    this.jreMetadataTagRegex = new jregex.Pattern(this.metadataTagRegexStr, jregex.Pattern.DOTALL);
+
+    this.dkbMetadataRegex = new RegExp(this.metadataTagRegexStr);
+    this.dkbAutoMetadataRegex= this.dkbMetadataRegex.toAutomaton();
+    //        this.kmyRedactionAllowed = createRegex(redactionAllowedStr);
+    //        this.kmyRedactionAllowed.setRefiller(refiller);
 
 
-    this.dkbMetadataRegex = new RegExp(metadataRegexStr);
-    this.dkbAutoMetadataRegex = dkbMetadataRegex.toAutomaton();
-//        this.kmyMetadataRegex = createRegex(metadataRegexStr);
-//        this.kmyMetadataRegex.setRefiller(refiller);
+  }
+
+
+  public void setColumnRulesStr(String columnRulesStr) {
+
+
+    ObjectMapper mapper = new ObjectMapper();
+    try
+    {
+      JsonNode metadataRedaction  = mapper.readTree(columnRulesStr);
+      JsonNode colRules = metadataRedaction.get("readRulesCols");
+      Iterator<Map.Entry<String, JsonNode>> colRulesIterator =  colRules.getFields();
+
+      while (colRulesIterator.hasNext()){
+        Map.Entry<String, JsonNode> entry = colRulesIterator.next();
+        JsonNode entryVal = entry.getValue();
+
+        JsonNode val;
+        val = entryVal.get("redactionAllowedRegex");
+        String redactionAllowedRegex = (val == null)? null: val.asText();
+
+        val = entryVal.get("redactionDeniedRegex");
+        String redactionDeniedRegex = (val == null)? null: val.asText();
+
+        val = entryVal.get("redactionDeniedAllRegex");
+        String redactionDeniedAllRegex = (val == null)? null: val.asText();
+
+        val = entryVal.get("redactionType");
+        String redactionType = (val == null)? RedactionType.FILTER.name(): val.asText();
+
+        val = entryVal.get("redactionDeltaTimeMs");
+        Long redactionDeltaTimeMs = (val == null)? -1L: val.asLong(-1L);
+
+
+        val = entryVal.get("redactionTagRegex");
+        String redactionTagRegex = (val == null)? null: val.asText();
+
+        FilterData colFilterData = new FilterData(redactionAllowedRegex,redactionDeniedRegex,redactionDeniedAllRegex,redactionType,redactionDeltaTimeMs,redactionTagRegex);
+
+
+        columnRules.put(entry.getKey(), colFilterData);
+      }
+
+    }
+    catch (Exception e){
+
+    }
+
 
   }
 
   public String getRedactionAllowedStr() {
     return redactionAllowedStr;
   }
+
+
+
 
   public void setRedactionAllowedStr(String redactionAllowedStr) {
     if (redactionAllowedStr == null) {
@@ -281,7 +383,7 @@ public class FilterData implements HeapSize {
 
     FilterData that = (FilterData) o;
 
-    if (metadataRegexStr != null ? !metadataRegexStr.equals(that.metadataRegexStr) : that.metadataRegexStr != null)
+    if (metadataTagRegexStr != null ? !metadataTagRegexStr.equals(that.metadataTagRegexStr) : that.metadataTagRegexStr != null)
       return false;
     if (redactionAllowedStr != null ? !redactionAllowedStr.equals(that.redactionAllowedStr) : that.redactionAllowedStr != null)
       return false;
@@ -295,7 +397,7 @@ public class FilterData implements HeapSize {
 
   @Override
   public int hashCode() {
-    int result = metadataRegexStr != null ? metadataRegexStr.hashCode() : 0;
+    int result = metadataTagRegexStr != null ? metadataTagRegexStr.hashCode() : 0;
     result = 31 * result + (redactionAllowedStr != null ? redactionAllowedStr.hashCode() : 0);
     result = 31 * result + (redactionDeniedStr != null ? redactionDeniedStr.hashCode() : 0);
     result = 31 * result + (redactionDeniedAllStr != null ? redactionDeniedAllStr.hashCode() : 0);
@@ -306,7 +408,7 @@ public class FilterData implements HeapSize {
   @Override
   public String toString() {
     return "FilterData{" +
-      "metadataRegexStr='" + metadataRegexStr + '\'' +
+      "metadataRegexStr='" + metadataTagRegexStr + '\'' +
       ", redactionAllowedStr='" + redactionAllowedStr + '\'' +
       ", redactionDeniedStr='" + redactionDeniedStr + '\'' +
       ", redactionDeniedAllStr='" + redactionDeniedAllStr + '\'' +

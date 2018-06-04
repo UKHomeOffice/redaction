@@ -22,6 +22,7 @@ public class PoleSecurityCoprocessorRedactOnly extends PoleSecurityCoprocessor{
         Region reg = (env.getEnvironment().getRegion());
         TableName table = getTableName(reg);
 
+        long currTime = System.currentTimeMillis();
 
         if (!table.isSystemTable()) {
 
@@ -32,7 +33,7 @@ public class PoleSecurityCoprocessorRedactOnly extends PoleSecurityCoprocessor{
                 if (filterData == null) {
                     throw new IOException("Failed to get credentials");
                 }
-                filterRedaction(user, table, result, filterData);
+                filterRedaction(user, table, result, filterData,currTime);
             } catch (Exception e) {
                 e.printStackTrace();
                 LOG.error("Found error when filtering data: ", e);

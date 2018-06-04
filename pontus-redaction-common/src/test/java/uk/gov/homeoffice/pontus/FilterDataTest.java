@@ -16,7 +16,7 @@ public class FilterDataTest {
     static FilterData fd = new FilterData();
 
     static {
-        fd.setMetadataRegexStr(".*b.*");
+        fd.setColumnRulesStr(".*b.*");
         fd.setRedactionAllowedStr(".*a.*");
         fd.setRedactionDeniedStr("den.*");
         fd.setRedactionDeniedAllStr(".*sh");

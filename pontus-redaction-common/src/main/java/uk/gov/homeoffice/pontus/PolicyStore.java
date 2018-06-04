@@ -9,7 +9,6 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.DFSInotifyEventInputStream;
-import org.apache.hadoop.hdfs.client.HdfsAdmin;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -181,7 +180,7 @@ public class PolicyStore extends Thread {
               if (retVal.getMetadataRegexStr() == null) {
                 FSDataInputStream is = srcFs.open(curPath);
                 String filterStr = IOUtils.toString(is);
-                retVal.setMetadataRegexStr(filterStr);
+                retVal.setColumnRulesStr(filterStr);
                 numItemsFound++;
                 LOG.info("Found metadata in path (" + curPath.toString() + ") : " + filterStr);
 

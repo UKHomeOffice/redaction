@@ -25,389 +25,434 @@ import org.apache.zookeeper.KeeperException;
 import uk.gov.homeoffice.pontus.*;
 import uk.gov.homeoffice.pontus.kafka.KafkaConnectorSingleton;
 
-
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-public class PoleSecurityCoprocessor extends BaseMasterAndRegionObserver
-        implements RegionServerObserver, WALObserver {
+public class PoleSecurityCoprocessor extends BaseMasterAndRegionObserver implements RegionServerObserver, WALObserver
+{
 
-    //    static final byte[] metaDataFamily = Bytes.toBytes("mdf");
-    static final byte[] metaDataQualifier = Bytes.toBytes("rmdq");
+  //    static final byte[] metaDataFamily = Bytes.toBytes("mdf");
+  static final byte[] metaDataQualifier = Bytes.toBytes("rmdq");
 
-    public static final Log LOG = LogFactory.getLog(PoleSecurityCoprocessor.class);
+  public static final Log LOG = LogFactory.getLog(PoleSecurityCoprocessor.class);
 
-    protected PolicyStore policyStore = null;
-    protected JWTStore jwtStore = null;
-    protected UserProvider userProvider;
-    //    protected ElasticConnectorSingleton elastic;
-//    protected SolrConnectorSingleton solr;
-    protected KafkaConnectorSingleton kafka;
+  protected PolicyStore policyStore = null;
+  protected JWTStore jwtStore = null;
+  protected UserProvider userProvider;
+  //    protected ElasticConnectorSingleton elastic;
+  //    protected SolrConnectorSingleton solr;
+  protected KafkaConnectorSingleton kafka;
 
+  public FilterData getUserPatterns(User user) throws IOException, KeeperException, InterruptedException
+  {
 
-    public FilterData getUserPatterns(User user) throws IOException, KeeperException, InterruptedException {
+    JWTClaim claim = jwtStore.getUserClaim(new JWTUser(user.getName()));
 
-        JWTClaim claim = jwtStore.getUserClaim(new JWTUser(user.getName()));
+    if (claim == null)
+    {
+      LOG.error("Could not find claim for user " + user.toString());
 
-        if (claim == null) {
-            LOG.error("Could not find claim for user " + user.toString());
-
-            return null;
-        }
-
-        if (!claim.isValid()) {
-            LOG.error("Invalid Claim received for user " + user.toString());
-
-            return null;
-        }
-
-        FilterData retVal = policyStore.getFilterData(claim.getBizctx());  // new FilterData(".*/uk.gov.police.*", ".*", "denied", "ssshhhh");
-
-        StringBuffer strBuf = new StringBuffer("Got filter Data for user ")
-                .append(user.getShortName())
-                .append(":")
-                .append(retVal == null? "NULL" : retVal.toString());
-        LOG.info (strBuf.toString());
-        return retVal;
+      return null;
     }
 
-    public static boolean filter(User user, TableName table, List<Cell> result, FilterData filterData, boolean redact) throws IOException {
-//        ArrayList<Cell> redactionList = new ArrayList<>(result.size());
+    if (!claim.isValid())
+    {
+      LOG.error("Invalid Claim received for user " + user.toString());
 
-        String metadataStr = null;
+      return null;
+    }
 
-        boolean keepAll = true;
-        boolean foundMetaData = false;
+    FilterData retVal = policyStore
+        .getFilterData(claim.getBizctx());  // new FilterData(".*/uk.gov.police.*", ".*", "denied", "ssshhhh");
 
-        Iterator<Cell> it = result.iterator();
+    StringBuffer strBuf = new StringBuffer("Got filter Data for user ").append(user.getShortName()).append(":")
+        .append(retVal == null ? "NULL" : retVal.toString());
+    LOG.info(strBuf.toString());
+    return retVal;
+  }
 
-//        for (int i = 0, ilen = result.size(); i < ilen; i++) {
-//            Cell cell = result.get(i);
+  public static boolean filter(User user, TableName table, List<Cell> result, FilterData filterData, boolean redact,
+                               long currTime) throws IOException
+  {
+    //        ArrayList<Cell> redactionList = new ArrayList<>(result.size());
 
-        int offset, len;
-        while (it.hasNext()) {
-            Cell cell = it.next();
-//            byte[] tags = cell.getTagsArray();
-//            offset = cell.getTagsOffset();
-//
-//            int tagsLength = cell.getTagsLength();
-//            // org.apache.hadoop.hbase.codec.KeyValueCodecWithTags
-////            int tagsLength = ((KeyValue) cell).getLength() - (((KeyValue) cell).getKeyLength() + cell.getValueLength() + 8);
-////            if(tagsLength > 0) {
-////                tagsLength -= 2;
-////            }
-//
-//            List<Tag> tagsList = Tag.asList(cell.getTagsArray(), offset, tagsLength);
-//
-//            for (int j = 0, jlen = tagsList.size(); j < jlen; j++) {
-//                Tag tag = tagsList.get(j);
-//
-//                try {
-//
-//                    metadataStr = Bytes.toString(tag.getBuffer(), tag.getTagOffset(), tag.getTagLength());
-//                } catch (Throwable e) {
-//
-//                    metadataStr = null;
-//                }
-//
-//            }
+    String metadataStr = null;
 
+    boolean keepAll = true;
+    boolean foundMetaData = false;
 
-            try {
-//                metadataStr = Bytes.toString(tags, offset, tagsLength);
+    Iterator<Cell> it = result.iterator();
 
+    //        for (int i = 0, ilen = result.size(); i < ilen; i++) {
+    //            Cell cell = result.get(i);
 
-                byte[] rowData = cell.getRowArray();
+    int offset, len;
+    while (it.hasNext())
+    {
+      Cell cell = it.next();
+      //            byte[] tags = cell.getTagsArray();
+      //            offset = cell.getTagsOffset();
+      //
+      //            int tagsLength = cell.getTagsLength();
+      //            // org.apache.hadoop.hbase.codec.KeyValueCodecWithTags
+      ////            int tagsLength = ((KeyValue) cell).getLength() - (((KeyValue) cell).getKeyLength() + cell.getValueLength() + 8);
+      ////            if(tagsLength > 0) {
+      ////                tagsLength -= 2;
+      ////            }
+      //
+      //            List<Tag> tagsList = Tag.asList(cell.getTagsArray(), offset, tagsLength);
+      //
+      //            for (int j = 0, jlen = tagsList.size(); j < jlen; j++) {
+      //                Tag tag = tagsList.get(j);
+      //
+      //                try {
+      //
+      //                    metadataStr = Bytes.toString(tag.getBuffer(), tag.getTagOffset(), tag.getTagLength());
+      //                } catch (Throwable e) {
+      //
+      //                    metadataStr = null;
+      //                }
+      //
+      //            }
 
-//            offset = cell.getFamilyOffset();
-//            byte[] currFamily = Arrays.copyOfRange(rowData, offset, offset + cell.getFamilyLength());
-//            if (Arrays.equals(currFamily, metaDataFamily)) {
-                offset = cell.getQualifierOffset();
-                byte[] currQual = Arrays.copyOfRange(rowData, offset, offset + cell.getQualifierLength());
+      try
+      {
+        //                metadataStr = Bytes.toString(tags, offset, tagsLength);
 
-                if (Arrays.equals(currQual, metaDataQualifier)) {
-                    metadataStr = Bytes.toString(cell.getValueArray(), cell.getValueOffset(), cell.getValueLength());
+        byte[] rowData = cell.getRowArray();
 
-                    if (metadataStr != null && metadataStr.length() > 0) {
-                        foundMetaData = true;
-                        if (!filterData.metaDataMatchesJre(metadataStr)) {
-                            // Don't throw an exception, as that will give the users clues that they're not allowed to see
-                            // the data; instead, mark all records to be cleaned, and log this (in ranger?)
-                            LOG.info("Failed to find metadata in query for table '"
-                                    + table.getNameAsString() + "'; user '"
-                                    + (user != null ? user.getShortName() : "null")
-                                    + "'; rowid = " + Bytes.toString(cell.getRowArray(), cell.getRowOffset(), cell.getRowLength()));
+        //            offset = cell.getFamilyOffset();
+        //            byte[] currFamily = Arrays.copyOfRange(rowData, offset, offset + cell.getFamilyLength());
+        //            if (Arrays.equals(currFamily, metaDataFamily)) {
+        offset = cell.getQualifierOffset();
+        byte[] currQual = Arrays.copyOfRange(rowData, offset, offset + cell.getQualifierLength());
 
-                            keepAll = false;
-//                        throw new AccessDeniedException("Failed to find metadata in query for table '"
-//                                + table.getNameAsString() + "'; user '"
-//                                + (user != null ? user.getShortName() : "null")
-//                                + "'");
-                            break;
-                        }
-                        it.remove();
-                        continue;
+        if (Arrays.equals(currQual, metaDataQualifier))
+        {
+          metadataStr = Bytes.toString(cell.getValueArray(), cell.getValueOffset(), cell.getValueLength());
 
-                    }
-//                    it.remove();
-////                    redactionList.add(cell);
-//                }
-//            } else {
+          if (metadataStr != null && metadataStr.length() > 0)
+          {
+            foundMetaData = true;
+            if (!filterData.metaDataMatchesJre(metadataStr))
+            {
+              // Don't throw an exception, as that will give the users clues that they're not allowed to see
+              // the data; instead, mark all records to be cleaned, and log this (in ranger?)
+              LOG.info("Failed to find metadata in query for table '" + table.getNameAsString() + "'; user '" + (
+                  user != null ? user.getShortName() : "null") + "'; rowid = " + Bytes
+                  .toString(cell.getRowArray(), cell.getRowOffset(), cell.getRowLength()));
 
-
-                }
-                String val = Bytes.toString(cell.getValueArray(), cell.getValueOffset(), cell.getValueLength());
-                if (filterData.needRedactionJre(val)) {
-                    it.remove();
-//
-//                        redactionList.add(cell);
-                }
-
-
-            } catch (Throwable e) {
-                String err = e.toString();
-                e.printStackTrace();
-                LOG.error("Got an exception during filtering process: ", e);
+              keepAll = false;
+              //                        throw new AccessDeniedException("Failed to find metadata in query for table '"
+              //                                + table.getNameAsString() + "'; user '"
+              //                                + (user != null ? user.getShortName() : "null")
+              //                                + "'");
+              break;
             }
-//            }
+            it.remove();
+            continue;
+
+          }
+          //                    it.remove();
+          ////                    redactionList.add(cell);
+          //                }
+          //            } else {
 
         }
 
-        if (!keepAll || !foundMetaData) {
-            result.clear();
-        }
+        filterRedaction(it, cell, filterData, currTime);
 
-//        if (keepAll) {
-//            if (redactionList.size() > 0) {
-//                if (redact) {
-//                    for (int i = 0, ilen = redactionList.size(); i < ilen; i++) {
-//                        Cell cell = redactionList.get(i);
-//                        byte[] vals = cell.getValueArray();
-//                        byte zero = 0;
-//                        int offset = cell.getValueOffset();
-//                        Arrays.fill(vals, offset, offset + cell.getValueLength(), zero);
-//
-//                        offset = cell.getQualifierOffset();
-//                        Arrays.fill(cell.getQualifierArray(), offset, offset + cell.getQualifierLength(), zero);
-//
-//                        offset = cell.getFamilyOffset();
-//                        Arrays.fill(cell.getFamilyArray(), offset, offset + cell.getFamilyLength(), zero);
-//
-//                        if (cell instanceof KeyValue) {
-//                            KeyValue kv = (KeyValue) cell;
-//                            kv.setTimestamp(0L);
-//                            kv.getOffset();
-//                        }
-//                    }
-//                } else {
-//                    result.removeAll(redactionList);
-//                }
-//            }
-//        } else {
-//            if (redact) {
-//                for (int i = 0, ilen = result.size(); i < ilen; i++) {
-//                    Cell cell = result.get(i);
-//                    byte[] vals = cell.getValueArray();
-//                    byte zero = 0;
-//                    int offset = cell.getValueOffset();
-//                    Arrays.fill(vals, offset, offset + cell.getValueLength(), zero);
-//                }
-//            } else {
-//                result.clear();
-//
-//            }
-//
-//        }
+      }
+      catch (Throwable e)
+      {
+        String err = e.toString();
+        e.printStackTrace();
+        LOG.error("Got an exception during filtering process: ", e);
+      }
+      //            }
 
-        return keepAll;
     }
 
-    public static boolean filterRedaction(User user, TableName table, List<Cell> result, FilterData filterData) throws IOException {
-//        ArrayList<Cell> redactionList = new ArrayList<>(result.size());
+    if (!keepAll || !foundMetaData)
+    {
+      result.clear();
+    }
 
+    //        if (keepAll) {
+    //            if (redactionList.size() > 0) {
+    //                if (redact) {
+    //                    for (int i = 0, ilen = redactionList.size(); i < ilen; i++) {
+    //                        Cell cell = redactionList.get(i);
+    //                        byte[] vals = cell.getValueArray();
+    //                        byte zero = 0;
+    //                        int offset = cell.getValueOffset();
+    //                        Arrays.fill(vals, offset, offset + cell.getValueLength(), zero);
+    //
+    //                        offset = cell.getQualifierOffset();
+    //                        Arrays.fill(cell.getQualifierArray(), offset, offset + cell.getQualifierLength(), zero);
+    //
+    //                        offset = cell.getFamilyOffset();
+    //                        Arrays.fill(cell.getFamilyArray(), offset, offset + cell.getFamilyLength(), zero);
+    //
+    //                        if (cell instanceof KeyValue) {
+    //                            KeyValue kv = (KeyValue) cell;
+    //                            kv.setTimestamp(0L);
+    //                            kv.getOffset();
+    //                        }
+    //                    }
+    //                } else {
+    //                    result.removeAll(redactionList);
+    //                }
+    //            }
+    //        } else {
+    //            if (redact) {
+    //                for (int i = 0, ilen = result.size(); i < ilen; i++) {
+    //                    Cell cell = result.get(i);
+    //                    byte[] vals = cell.getValueArray();
+    //                    byte zero = 0;
+    //                    int offset = cell.getValueOffset();
+    //                    Arrays.fill(vals, offset, offset + cell.getValueLength(), zero);
+    //                }
+    //            } else {
+    //                result.clear();
+    //
+    //            }
+    //
+    //        }
 
+    return keepAll;
+  }
 
-        Iterator<Cell> it = result.iterator();
+  public static void filterRedaction(Iterator<Cell> it, Cell cell, FilterData filterData, long currTime)
+  {
+    String qualifier = Bytes
+        .toStringBinary(cell.getQualifierArray(), cell.getQualifierOffset(), cell.getQualifierLength());
+    FilterData localFilterData = filterData.getReadColumnRules(qualifier);
 
-        boolean retVal = true;
+    if (localFilterData == null)
+    {
+      localFilterData = filterData;
+    }
 
-        while (it.hasNext()) {
-            Cell cell = it.next();
-            try {
-                String qualifier = Bytes.toStringBinary(cell.getQualifierArray(), cell.getQualifierOffset(), cell.getQualifierLength());
-                String val = Bytes.toStringBinary(cell.getValueArray(), cell.getValueOffset(), cell.getValueLength());
-                String val2 = org.janusgraph.util.encoding.StringEncoding.readAsciiString(cell.getValueArray(), cell.getValueOffset());
+    String val = Bytes.toStringBinary(cell.getValueArray(), cell.getValueOffset(), cell.getValueLength());
+    //                String val2 = org.janusgraph.util.encoding.StringEncoding.readAsciiString(cell.getValueArray(), cell.getValueOffset());
 
-                if (filterData.needRedactionJre(val)) {
-                    it.remove();
-                }
+    long timestamp = cell.getTimestamp();
 
+    String tag = Bytes.toStringBinary(cell.getTagsArray(), cell.getTagsOffset(), cell.getTagsLength());
 
-            } catch (Throwable e) {
-//                String err = e.toString();
-//                e.printStackTrace();
-                LOG.error("Got an exception during filtering process: ", e);
-                retVal = false;
+    if (localFilterData.needRedactionJre(val, timestamp, currTime, tag))
+    {
+      it.remove();
+    }
+  }
+
+  public static boolean filterRedaction(User user, TableName table, List<Cell> result, FilterData filterData,
+                                        long currTime) throws IOException
+  {
+    //        ArrayList<Cell> redactionList = new ArrayList<>(result.size());
+
+    Iterator<Cell> it = result.iterator();
+
+    boolean retVal = true;
+
+    while (it.hasNext())
+    {
+      Cell cell = it.next();
+      try
+      {
+
+        filterRedaction(it, cell, filterData, currTime);
+
+      }
+      catch (Throwable e)
+      {
+        //                String err = e.toString();
+        //                e.printStackTrace();
+        LOG.error("Got an exception during filtering process: ", e);
+        retVal = false;
+      }
+
+    }
+
+    //        if (!keepAll) {
+    //            result.clear();
+    //        }
+
+    return retVal;
+  }
+
+  public static boolean filterMetatata(User user, TableName table, List<Cell> result, FilterData filterData)
+      throws IOException
+  {
+    String metadataStr = null;
+
+    boolean keepAll = true;
+    boolean foundMetaData = false;
+
+    Iterator<Cell> it = result.iterator();
+    int offset, len;
+    while (it.hasNext())
+    {
+      Cell cell = it.next();
+      try
+      {
+        byte[] rowData = cell.getRowArray();
+        offset = cell.getQualifierOffset();
+        byte[] currQual = Arrays.copyOfRange(rowData, offset, offset + cell.getQualifierLength());
+
+        if (Arrays.equals(currQual, metaDataQualifier))
+        {
+          metadataStr = Bytes.toString(cell.getValueArray(), cell.getValueOffset(), cell.getValueLength());
+
+          if (metadataStr != null && metadataStr.length() > 0)
+          {
+            foundMetaData = true;
+            if (!filterData.metaDataMatchesJre(metadataStr))
+            {
+              // Don't throw an exception, as that will give the users clues that they're not allowed to see
+              // the data; instead, mark all records to be cleaned, and log this (in ranger?)
+
+              // LPPM 31 Jan 2017 - this is not supported at the moment....
+              //                            LOG.info("Failed to find metadata in query for table '"
+              //                                    + table.getNameAsString() + "'; user '"
+              //                                    + (user != null ? user.getShortName() : "null")
+              //                                    + "'; rowid = " + Bytes.toString(cell.getRowArray(), cell.getRowOffset(), cell.getRowLength()));
+
+              keepAll = false;
+              //                        throw new AccessDeniedException("Failed to find metadata in query for table '"
+              //                                + table.getNameAsString() + "'; user '"
+              //                                + (user != null ? user.getShortName() : "null")
+              //                                + "'");
+              break;
             }
+            it.remove();
+            continue;
 
+          }
         }
 
-//        if (!keepAll) {
-//            result.clear();
-//        }
-
-
-        return retVal;
-    }
-
-
-    public static boolean filterMetatata(User user, TableName table, List<Cell> result, FilterData filterData) throws IOException {
-        String metadataStr = null;
-
-        boolean keepAll = true;
-        boolean foundMetaData = false;
-
-        Iterator<Cell> it = result.iterator();
-        int offset, len;
-        while (it.hasNext()) {
-            Cell cell = it.next();
-            try {
-                byte[] rowData = cell.getRowArray();
-                offset = cell.getQualifierOffset();
-                byte[] currQual = Arrays.copyOfRange(rowData, offset, offset + cell.getQualifierLength());
-
-                if (Arrays.equals(currQual, metaDataQualifier)) {
-                    metadataStr = Bytes.toString(cell.getValueArray(), cell.getValueOffset(), cell.getValueLength());
-
-                    if (metadataStr != null && metadataStr.length() > 0) {
-                        foundMetaData = true;
-                        if (!filterData.metaDataMatchesJre(metadataStr)) {
-                            // Don't throw an exception, as that will give the users clues that they're not allowed to see
-                            // the data; instead, mark all records to be cleaned, and log this (in ranger?)
-
-                            // LPPM 31 Jan 2017 - this is not supported at the moment....
-//                            LOG.info("Failed to find metadata in query for table '"
-//                                    + table.getNameAsString() + "'; user '"
-//                                    + (user != null ? user.getShortName() : "null")
-//                                    + "'; rowid = " + Bytes.toString(cell.getRowArray(), cell.getRowOffset(), cell.getRowLength()));
-
-                            keepAll = false;
-//                        throw new AccessDeniedException("Failed to find metadata in query for table '"
-//                                + table.getNameAsString() + "'; user '"
-//                                + (user != null ? user.getShortName() : "null")
-//                                + "'");
-                            break;
-                        }
-                        it.remove();
-                        continue;
-
-                    }
-                }
-
-            } catch (Throwable e) {
-                LOG.error("Got an exception during filtering process: ", e);
-                keepAll = false;
-            }
-
-        }
-
-        if (!keepAll || !foundMetaData) {
-            result.clear();
-        }
-
-        return keepAll;
-    }
-
-    @Override
-    public void start(CoprocessorEnvironment env) throws IOException {
-        super.start(env);
-
-        this.userProvider = UserProvider.instantiate(env.getConfiguration());
-
-        CompoundConfiguration conf = new CompoundConfiguration();
-        conf.add(env.getConfiguration());
-
-        Configuration config = new Configuration(false);
-        config.addResource(new Path("/usr/hdp/current/hadoop-client/conf/core-site.xml"));
-        config.addResource(new Path("/usr/hdp/current/hadoop-client/conf/hdfs-site.xml"));
-        config.addResource(new Path("/opt/pontus/pontus-hbase/current/conf/core-site.xml"));
-        config.addResource(new Path("/opt/pontus/pontus-hbase/current/conf/hdfs-site.xml"));
-
-        conf.add(config);
-
-
-        try {
-            policyStore = PolicyStore.createAndStart(conf);
-        } catch (Throwable e) {
-            LOG.error("Failed to create policy store:", e);
-        }
-
-        try {
-            jwtStore = JWTStore.create(conf);
-        } catch (KeeperException e) {
-            LOG.error("Failed to create JWT store:", e);
-            throw new IOException(e);
-        }
-
-//        solr = SolrConnectorSingleton.create(conf);
-//        elastic = ElasticConnectorSingleton.createElasticConnectorSingleton(conf);
-        kafka = KafkaConnectorSingleton.create(conf);
+      }
+      catch (Throwable e)
+      {
+        LOG.error("Got an exception during filtering process: ", e);
+        keepAll = false;
+      }
 
     }
 
-    @Override
-    public void stop(CoprocessorEnvironment env) {
-
-        PolicyStore.destroyAndStop();
-
+    if (!keepAll || !foundMetaData)
+    {
+      result.clear();
     }
 
-    @Override
-    public void postGetOp(ObserverContext<RegionCoprocessorEnvironment> env, Get get, List<Cell> result)
-            throws IOException {
+    return keepAll;
+  }
 
-        Region reg = (env.getEnvironment().getRegion());
-        TableName table = getTableName(reg);
+  @Override public void start(CoprocessorEnvironment env) throws IOException
+  {
+    super.start(env);
 
+    this.userProvider = UserProvider.instantiate(env.getConfiguration());
 
-        if (!table.isSystemTable()) {
+    CompoundConfiguration conf = new CompoundConfiguration();
+    conf.add(env.getConfiguration());
 
-            User user = getActiveUser();
-            FilterData filterData = null;
-            try {
-                filterData = getUserPatterns(user);
-                if (filterData == null) {
-                    throw new IOException("Failed to get credentials");
-                }
-                filter(user, table, result, filterData, false);
-            } catch (Exception e) {
-                e.printStackTrace();
-                LOG.error("Found error when filtering data: ", e);
-                throw new IOException(e.getMessage());
+    Configuration config = new Configuration(false);
+    config.addResource(new Path("/usr/hdp/current/hadoop-client/conf/core-site.xml"));
+    config.addResource(new Path("/usr/hdp/current/hadoop-client/conf/hdfs-site.xml"));
+    config.addResource(new Path("/opt/pontus/pontus-hbase/current/conf/core-site.xml"));
+    config.addResource(new Path("/opt/pontus/pontus-hbase/current/conf/hdfs-site.xml"));
 
-            }
+    conf.add(config);
+
+    try
+    {
+      policyStore = PolicyStore.createAndStart(conf);
+    }
+    catch (Throwable e)
+    {
+      LOG.error("Failed to create policy store:", e);
+    }
+
+    try
+    {
+      jwtStore = JWTStore.create(conf);
+    }
+    catch (KeeperException e)
+    {
+      LOG.error("Failed to create JWT store:", e);
+      throw new IOException(e);
+    }
+
+    //        solr = SolrConnectorSingleton.create(conf);
+    //        elastic = ElasticConnectorSingleton.createElasticConnectorSingleton(conf);
+    kafka = KafkaConnectorSingleton.create(conf);
+
+  }
+
+  @Override public void stop(CoprocessorEnvironment env)
+  {
+
+    PolicyStore.destroyAndStop();
+
+  }
+
+  @Override public void postGetOp(ObserverContext<RegionCoprocessorEnvironment> env, Get get, List<Cell> result)
+      throws IOException
+  {
+
+    Region reg = (env.getEnvironment().getRegion());
+    TableName table = getTableName(reg);
+    long currTime = System.currentTimeMillis();
+
+    if (!table.isSystemTable())
+    {
+
+      User user = getActiveUser();
+      FilterData filterData = null;
+      try
+      {
+        filterData = getUserPatterns(user);
+        if (filterData == null)
+        {
+          throw new IOException("Failed to get credentials");
         }
+        filter(user, table, result, filterData, false, currTime);
+      }
+      catch (Exception e)
+      {
+        e.printStackTrace();
+        LOG.error("Found error when filtering data: ", e);
+        throw new IOException(e.getMessage());
 
+      }
     }
 
-    protected User getActiveUser() throws IOException {
-        User user = RpcServer.getRequestUser();
-        if (user == null) {
-            // for non-rpc handling, fallback to system user
-            user = userProvider.getCurrent();
-        }
-        return user;
-    }
+  }
 
-    protected TableName getTableName(Region region) {
-        HRegionInfo regionInfo = region.getRegionInfo();
-        if (regionInfo != null) {
-            return regionInfo.getTable();
-        }
-        return null;
+  protected User getActiveUser() throws IOException
+  {
+    User user = RpcServer.getRequestUser();
+    if (user == null)
+    {
+      // for non-rpc handling, fallback to system user
+      user = userProvider.getCurrent();
     }
+    return user;
+  }
+
+  protected TableName getTableName(Region region)
+  {
+    HRegionInfo regionInfo = region.getRegionInfo();
+    if (regionInfo != null)
+    {
+      return regionInfo.getTable();
+    }
+    return null;
+  }
 
 /*
     @Override
@@ -484,168 +529,191 @@ public class PoleSecurityCoprocessor extends BaseMasterAndRegionObserver
     }
 */
 
-    @Override
-    public RegionScanner preScannerOpen(final ObserverContext<RegionCoprocessorEnvironment> c, final Scan scan,
-                                        final RegionScanner s) throws IOException {
-        try {
+  @Override public RegionScanner preScannerOpen(final ObserverContext<RegionCoprocessorEnvironment> c, final Scan scan,
+                                                final RegionScanner s) throws IOException
+  {
+    try
+    {
 
-            Region region = (c.getEnvironment().getRegion());
-            TableName table = getTableName(region);
+      Region region = (c.getEnvironment().getRegion());
+      TableName table = getTableName(region);
 
-            if (!table.isSystemTable()) {
-                User user = getActiveUser();
-                FilterData filterData = getUserPatterns(user);
-                if (filterData == null) {
-                    throw new IOException("Failed to get credentials");
-                }
-                if (scan.hasFilter()) {
-                    Filter origFilter = scan.getFilter();
-                    PoleFilterPreserveOrig newFilter = new PoleFilterPreserveOrig(origFilter, user, table, filterData);
-                    scan.setFilter(newFilter);
-                } else {
-                    PoleFilter newFilter = new PoleFilter(user, table, filterData);
-                    scan.setFilter(newFilter);
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            LOG.error("Found error when filtering data: ", e);
-            throw new IOException(e.getMessage());
-
+      if (!table.isSystemTable())
+      {
+        User user = getActiveUser();
+        FilterData filterData = getUserPatterns(user);
+        if (filterData == null)
+        {
+          throw new IOException("Failed to get credentials");
         }
-
-        return s;
+        if (scan.hasFilter())
+        {
+          Filter origFilter = scan.getFilter();
+          PoleFilterPreserveOrig newFilter = new PoleFilterPreserveOrig(origFilter, user, table, filterData);
+          scan.setFilter(newFilter);
+        }
+        else
+        {
+          PoleFilter newFilter = new PoleFilter(user, table, filterData);
+          scan.setFilter(newFilter);
+        }
+      }
     }
-
-    @Override
-    public void preStopRegionServer(ObserverContext<RegionServerCoprocessorEnvironment> env) throws IOException {
-
-    }
-
-    @Override
-    public void preMerge(ObserverContext<RegionServerCoprocessorEnvironment> ctx, Region regionA, Region regionB) throws IOException {
-
-    }
-
-    @Override
-    public void postMerge(ObserverContext<RegionServerCoprocessorEnvironment> c, Region regionA, Region regionB, Region mergedRegion) throws IOException {
-
-    }
-
-    @Override
-    public void preMergeCommit(ObserverContext<RegionServerCoprocessorEnvironment> ctx, Region regionA, Region regionB, @MetaMutationAnnotation List<Mutation> metaEntries) throws IOException {
+    catch (Exception e)
+    {
+      e.printStackTrace();
+      LOG.error("Found error when filtering data: ", e);
+      throw new IOException(e.getMessage());
 
     }
 
-    @Override
-    public void postMergeCommit(ObserverContext<RegionServerCoprocessorEnvironment> ctx, Region regionA, Region regionB, Region mergedRegion) throws IOException {
+    return s;
+  }
 
-    }
+  @Override public void preStopRegionServer(ObserverContext<RegionServerCoprocessorEnvironment> env) throws IOException
+  {
 
-    @Override
-    public void preRollBackMerge(ObserverContext<RegionServerCoprocessorEnvironment> ctx, Region regionA, Region regionB) throws IOException {
+  }
 
-    }
+  @Override public void preMerge(ObserverContext<RegionServerCoprocessorEnvironment> ctx, Region regionA,
+                                 Region regionB) throws IOException
+  {
 
-    @Override
-    public void postRollBackMerge(ObserverContext<RegionServerCoprocessorEnvironment> ctx, Region regionA, Region regionB) throws IOException {
+  }
 
-    }
+  @Override public void postMerge(ObserverContext<RegionServerCoprocessorEnvironment> c, Region regionA, Region regionB,
+                                  Region mergedRegion) throws IOException
+  {
 
-    @Override
-    public void preRollWALWriterRequest(ObserverContext<RegionServerCoprocessorEnvironment> ctx) throws IOException {
+  }
 
-    }
+  @Override public void preMergeCommit(ObserverContext<RegionServerCoprocessorEnvironment> ctx, Region regionA,
+                                       Region regionB, @MetaMutationAnnotation List<Mutation> metaEntries)
+      throws IOException
+  {
 
-    @Override
-    public void postRollWALWriterRequest(ObserverContext<RegionServerCoprocessorEnvironment> ctx) throws IOException {
+  }
 
-    }
+  @Override public void postMergeCommit(ObserverContext<RegionServerCoprocessorEnvironment> ctx, Region regionA,
+                                        Region regionB, Region mergedRegion) throws IOException
+  {
 
-    @Override
-    public ReplicationEndpoint postCreateReplicationEndPoint(ObserverContext<RegionServerCoprocessorEnvironment> ctx, ReplicationEndpoint endpoint) {
-        return endpoint;
-    }
+  }
 
-    @Override
-    public void preReplicateLogEntries(ObserverContext<RegionServerCoprocessorEnvironment> ctx, List<AdminProtos.WALEntry> entries, CellScanner cells) throws IOException {
+  @Override public void preRollBackMerge(ObserverContext<RegionServerCoprocessorEnvironment> ctx, Region regionA,
+                                         Region regionB) throws IOException
+  {
 
-    }
+  }
 
-    @Override
-    public void postReplicateLogEntries(ObserverContext<RegionServerCoprocessorEnvironment> ctx, List<AdminProtos.WALEntry> entries, CellScanner cells) throws IOException {
+  @Override public void postRollBackMerge(ObserverContext<RegionServerCoprocessorEnvironment> ctx, Region regionA,
+                                          Region regionB) throws IOException
+  {
 
-    }
+  }
 
-    @Override
-    public boolean preWALWrite(ObserverContext<? extends WALCoprocessorEnvironment> ctx, HRegionInfo info, WALKey logKey, WALEdit logEdit) throws IOException {
-        return true;
-    }
+  @Override public void preRollWALWriterRequest(ObserverContext<RegionServerCoprocessorEnvironment> ctx)
+      throws IOException
+  {
 
-    @Override
-    public boolean preWALWrite(ObserverContext<WALCoprocessorEnvironment> ctx, HRegionInfo info, HLogKey logKey, WALEdit logEdit) throws IOException {
-        return true;
-    }
+  }
 
-    @Override
-    public void postWALWrite(ObserverContext<? extends WALCoprocessorEnvironment> ctx, HRegionInfo info, WALKey logKey, WALEdit logEdit) throws IOException {
+  @Override public void postRollWALWriterRequest(ObserverContext<RegionServerCoprocessorEnvironment> ctx)
+      throws IOException
+  {
 
-    }
+  }
 
-    @Override
-    public void postWALWrite(ObserverContext<WALCoprocessorEnvironment> ctx, HRegionInfo info, HLogKey logKey, WALEdit logEdit) throws IOException {
+  @Override public ReplicationEndpoint postCreateReplicationEndPoint(
+      ObserverContext<RegionServerCoprocessorEnvironment> ctx, ReplicationEndpoint endpoint)
+  {
+    return endpoint;
+  }
 
-    }
+  @Override public void preReplicateLogEntries(ObserverContext<RegionServerCoprocessorEnvironment> ctx,
+                                               List<AdminProtos.WALEntry> entries, CellScanner cells) throws IOException
+  {
 
+  }
 
-    //    @Override
-//    public boolean postScannerNext(final ObserverContext<RegionCoprocessorEnvironment> c, final InternalScanner s,
-//                                   final List<Result> results, final int limit, final boolean hasNext) throws IOException {
-//
-//
-////        boolean skip = true;
-////
-////        if (skip) {
-////            return hasNext;
-////        }
-//
-//        //      RowFilter filter;
-//
-//        //       ArrayList<Result> redactionResults = new ArrayList<>(results.size());
-//
-//        try {
-//            User user = getActiveUser();
-//            Region region = getRegion(c.getEnvironment());
-//            TableName table = getTableName(region);
-//
-//            Pattern[] patterns = getUserPatterns(user);
-//            if (patterns[REDACTION_TABLES_REGEX].matcher(table.getNameAsString()).matches()) {
-//
-//                Iterator<Result> it = results.iterator();
-//
-//                while (it.hasNext()) {
-//                    Result res = it.next();
-//                    List<Cell> cells = res.listCells();
-//
-//                    if (!filter(user, table, cells, patterns, true)) {
-//                        it.remove();
-//                    }
-//
-//
-//                }
-//
-//            }
-//        } catch (Exception e) {
-//            LOG.error("Failed to filter data: ", e);
-//        }
-//
-////        if (redactionResults.size() > 0) {
-////
-////            results.removeAll(redactionResults);
-////        }
-//
-//        return hasNext;
-//    }
+  @Override public void postReplicateLogEntries(ObserverContext<RegionServerCoprocessorEnvironment> ctx,
+                                                List<AdminProtos.WALEntry> entries, CellScanner cells)
+      throws IOException
+  {
 
+  }
+
+  @Override public boolean preWALWrite(ObserverContext<? extends WALCoprocessorEnvironment> ctx, HRegionInfo info,
+                                       WALKey logKey, WALEdit logEdit) throws IOException
+  {
+    return true;
+  }
+
+  @Override public boolean preWALWrite(ObserverContext<WALCoprocessorEnvironment> ctx, HRegionInfo info, HLogKey logKey,
+                                       WALEdit logEdit) throws IOException
+  {
+    return true;
+  }
+
+  @Override public void postWALWrite(ObserverContext<? extends WALCoprocessorEnvironment> ctx, HRegionInfo info,
+                                     WALKey logKey, WALEdit logEdit) throws IOException
+  {
+
+  }
+
+  @Override public void postWALWrite(ObserverContext<WALCoprocessorEnvironment> ctx, HRegionInfo info, HLogKey logKey,
+                                     WALEdit logEdit) throws IOException
+  {
+
+  }
+
+  //    @Override
+  //    public boolean postScannerNext(final ObserverContext<RegionCoprocessorEnvironment> c, final InternalScanner s,
+  //                                   final List<Result> results, final int limit, final boolean hasNext) throws IOException {
+  //
+  //
+  ////        boolean skip = true;
+  ////
+  ////        if (skip) {
+  ////            return hasNext;
+  ////        }
+  //
+  //        //      RowFilter filter;
+  //
+  //        //       ArrayList<Result> redactionResults = new ArrayList<>(results.size());
+  //
+  //        try {
+  //            User user = getActiveUser();
+  //            Region region = getRegion(c.getEnvironment());
+  //            TableName table = getTableName(region);
+  //
+  //            Pattern[] patterns = getUserPatterns(user);
+  //            if (patterns[REDACTION_TABLES_REGEX].matcher(table.getNameAsString()).matches()) {
+  //
+  //                Iterator<Result> it = results.iterator();
+  //
+  //                while (it.hasNext()) {
+  //                    Result res = it.next();
+  //                    List<Cell> cells = res.listCells();
+  //
+  //                    if (!filter(user, table, cells, patterns, true)) {
+  //                        it.remove();
+  //                    }
+  //
+  //
+  //                }
+  //
+  //            }
+  //        } catch (Exception e) {
+  //            LOG.error("Failed to filter data: ", e);
+  //        }
+  //
+  ////        if (redactionResults.size() > 0) {
+  ////
+  ////            results.removeAll(redactionResults);
+  ////        }
+  //
+  //        return hasNext;
+  //    }
 
 }
