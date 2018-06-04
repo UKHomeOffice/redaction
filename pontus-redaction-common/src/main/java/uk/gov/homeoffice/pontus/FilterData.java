@@ -117,7 +117,7 @@ public class FilterData implements HeapSize {
   private Automaton dkbAutoRedactionDenied;
   private Automaton dkbAutoRedactionDeniedAll;
 
-  private Long deltaTime;
+  private long deltaTime =  -1;
 //
 //    private Regex kmyMetadataRegex;
 //    private Regex kmyRedactionAllowed;
@@ -157,7 +157,7 @@ public class FilterData implements HeapSize {
     this.setRedactionElasticPostFilterQueryStr(redactionElasticPostFilterQueryStr);
   }
 
-  public FilterData(String redactionAllowedStr, String redactionDeniedStr, String redactionDeniedAllStr, String redactionTypeStr, Long deltaTime, String tagsStr) {
+  public FilterData(String redactionAllowedStr, String redactionDeniedStr, String redactionDeniedAllStr, String redactionTypeStr, long deltaTime, String tagsStr) {
     this.setRedactionAllowedStr(redactionAllowedStr);
     this.setRedactionDeniedStr(redactionDeniedStr);
     this.setRedactionDeniedAllStr(redactionDeniedAllStr);
@@ -191,7 +191,7 @@ public class FilterData implements HeapSize {
 
 
   public boolean needRedactionJre(String val, long timeStamp, long currTime, String tag) {
-    if (currTime - timeStamp > this.deltaTime){
+    if (currTime - timeStamp <= this.deltaTime){
       return true;
     }
     return !(
