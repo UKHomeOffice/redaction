@@ -197,8 +197,8 @@ public class FilterData implements HeapSize {
     return !(
            (".*".equals(redactionAllowedStr) ||   jreRedactionAllowed.matches(val))
       &&   (tag == null || jreMetadataTagRegex == null || jreMetadataTagRegex.matches (tag))
-      && ! ( jreRedactionDenied.matches(val) )
-      && ! ( jreRedactionDeniedAll.matches(val)) );
+      && ! ( !"(?!x)x".equals(redactionDeniedStr) && jreRedactionDenied.matches(val) )
+      && ! ( !"(?!x)x".equals(redactionDeniedAllStr) && jreRedactionDeniedAll.matches(val)) );
   }
 
   public boolean needRedaction(String val) {
