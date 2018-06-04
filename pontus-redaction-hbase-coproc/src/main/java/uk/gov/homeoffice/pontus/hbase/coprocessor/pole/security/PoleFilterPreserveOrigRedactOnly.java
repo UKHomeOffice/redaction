@@ -66,8 +66,9 @@ public class PoleFilterPreserveOrigRedactOnly extends FilterBase {
     @Override
     public void filterRowCells(List<Cell> kvs) throws IOException {
 
+        long currTime = System.currentTimeMillis();
         this.orig.filterRowCells(kvs);
-        PoleSecurityCoprocessor.filterRedaction(user, table, kvs, patterns);
+        PoleSecurityCoprocessor.filterRedaction(user, table, kvs, patterns,currTime);
     }
 
     @Override
