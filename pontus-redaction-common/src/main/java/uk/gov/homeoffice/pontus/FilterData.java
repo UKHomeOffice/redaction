@@ -308,6 +308,7 @@ public class FilterData implements HeapSize {
     }
     catch (Exception e){
 
+      e.printStackTrace();
     }
 
 
