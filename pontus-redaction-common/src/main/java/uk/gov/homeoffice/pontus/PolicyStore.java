@@ -177,7 +177,7 @@ public class PolicyStore extends Thread {
             String fileName = curPath.getName();
             LOG.info("searching for " + fileName + " in path " + curPath.toString());
             if (METADATA.equals(fileName)) {
-              if (retVal.getCo()r() == null) {
+              if (retVal.getColumnRulesStr() == null) {
                 FSDataInputStream is = srcFs.open(curPath);
                 String filterStr = IOUtils.toString(is);
                 retVal.setColumnRulesStr(filterStr);
