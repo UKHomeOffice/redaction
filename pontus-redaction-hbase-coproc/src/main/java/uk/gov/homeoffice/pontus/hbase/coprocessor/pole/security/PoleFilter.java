@@ -62,7 +62,8 @@ public class PoleFilter extends FilterBase {
 
     @Override
     public void filterRowCells(List<Cell> kvs) throws IOException {
-        PoleSecurityCoprocessor.filter(user,table,kvs,patterns,false);
+        long currTime = System.currentTimeMillis();
+        PoleSecurityCoprocessor.filter(user,table,kvs,patterns,false, currTime);
     }
 
     @Override
