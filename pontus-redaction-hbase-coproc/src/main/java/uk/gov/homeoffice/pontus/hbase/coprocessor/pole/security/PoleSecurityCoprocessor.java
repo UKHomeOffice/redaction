@@ -231,7 +231,10 @@ public class PoleSecurityCoprocessor extends BaseMasterAndRegionObserver impleme
 //        .toStringBinary(cell.getQualifierArray(), cell.getQualifierOffset(), cell.getQualifierLength());
 
 
-    byte[] qualifier = Arrays.copyOfRange(cell.getQualifierArray(), cell.getQualifierOffset(), cell.getQualifierLength());
+    byte[] qualifierArray = cell.getQualifierArray();
+    int qualifierOffset = cell.getQualifierOffset();
+
+    byte[] qualifier = Arrays.copyOfRange(qualifierArray, qualifierOffset ,qualifierOffset + cell.getQualifierLength());
 
 
     FilterData localFilterData = filterData.getReadColumnRules(qualifier);
