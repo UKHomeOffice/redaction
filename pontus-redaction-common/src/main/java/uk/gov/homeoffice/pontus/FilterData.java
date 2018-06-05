@@ -364,7 +364,7 @@ public class FilterData implements HeapSize {
         FilterData colFilterData = new FilterData(redactionAllowedRegex,redactionDeniedRegex,redactionDeniedAllRegex,redactionType,redactionDeltaTimeMs,redactionTagRegex);
 
         val = entryVal.get("forceFilter");
-        this.setForceFilter((val == null)? false: val.asBoolean());
+        colFilterData.setForceFilter((val == null)? false: val.asBoolean());
 
         columnRules.put(Bytes.toBytesBinary( entry.getKey()), colFilterData);
       }

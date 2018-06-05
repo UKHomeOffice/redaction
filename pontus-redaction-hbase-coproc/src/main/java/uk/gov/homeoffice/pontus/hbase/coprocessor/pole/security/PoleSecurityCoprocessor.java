@@ -244,9 +244,9 @@ public class PoleSecurityCoprocessor extends BaseMasterAndRegionObserver impleme
       localFilterData = filterData;
     }
 
-    if (filterData.getNeedsInspection())
+    if (localFilterData.getNeedsInspection())
     {
-      if (!filterData.isForceFilter())
+      if (!localFilterData.isForceFilter())
       {
         String val = Bytes.toStringBinary(cell.getValueArray(), cell.getValueOffset(), cell.getValueLength());
         //                String val2 = org.janusgraph.util.encoding.StringEncoding.readAsciiString(cell.getValueArray(), cell.getValueOffset());
