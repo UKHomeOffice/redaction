@@ -236,16 +236,19 @@ public class PoleSecurityCoprocessor extends BaseMasterAndRegionObserver impleme
       localFilterData = filterData;
     }
 
-    String val = Bytes.toStringBinary(cell.getValueArray(), cell.getValueOffset(), cell.getValueLength());
-    //                String val2 = org.janusgraph.util.encoding.StringEncoding.readAsciiString(cell.getValueArray(), cell.getValueOffset());
-
-    long timestamp = cell.getTimestamp();
-
-    String tag = Bytes.toStringBinary(cell.getTagsArray(), cell.getTagsOffset(), cell.getTagsLength());
-
-    if (localFilterData.needRedactionJre(val, timestamp, currTime, tag))
+    if (filterData.getNeedsInspection())
     {
-      it.remove();
+      String val = Bytes.toStringBinary(cell.getValueArray(), cell.getValueOffset(), cell.getValueLength());
+      //                String val2 = org.janusgraph.util.encoding.StringEncoding.readAsciiString(cell.getValueArray(), cell.getValueOffset());
+
+      long timestamp = cell.getTimestamp();
+
+      String tag = Bytes.toStringBinary(cell.getTagsArray(), cell.getTagsOffset(), cell.getTagsLength());
+
+      if (localFilterData.needRedactionJre(val, timestamp, currTime, tag))
+      {
+        it.remove();
+      }
     }
   }
 
