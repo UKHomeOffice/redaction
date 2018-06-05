@@ -227,8 +227,13 @@ public class PoleSecurityCoprocessor extends BaseMasterAndRegionObserver impleme
 
   public static void filterRedaction(Iterator<Cell> it, Cell cell, FilterData filterData, long currTime)
   {
-    String qualifier = Bytes
-        .toStringBinary(cell.getQualifierArray(), cell.getQualifierOffset(), cell.getQualifierLength());
+//    String qualifier = Bytes
+//        .toStringBinary(cell.getQualifierArray(), cell.getQualifierOffset(), cell.getQualifierLength());
+
+
+    byte[] qualifier = Arrays.copyOfRange(cell.getQualifierArray(), cell.getQualifierOffset(), cell.getQualifierLength());
+
+
     FilterData localFilterData = filterData.getReadColumnRules(qualifier);
 
     if (localFilterData == null)
@@ -238,14 +243,21 @@ public class PoleSecurityCoprocessor extends BaseMasterAndRegionObserver impleme
 
     if (filterData.getNeedsInspection())
     {
-      String val = Bytes.toStringBinary(cell.getValueArray(), cell.getValueOffset(), cell.getValueLength());
-      //                String val2 = org.janusgraph.util.encoding.StringEncoding.readAsciiString(cell.getValueArray(), cell.getValueOffset());
+      if (!filterData.isForceFilter())
+      {
+        String val = Bytes.toStringBinary(cell.getValueArray(), cell.getValueOffset(), cell.getValueLength());
+        //                String val2 = org.janusgraph.util.encoding.StringEncoding.readAsciiString(cell.getValueArray(), cell.getValueOffset());
 
-      long timestamp = cell.getTimestamp();
+        long timestamp = cell.getTimestamp();
 
-      String tag = Bytes.toStringBinary(cell.getTagsArray(), cell.getTagsOffset(), cell.getTagsLength());
+        String tag = Bytes.toStringBinary(cell.getTagsArray(), cell.getTagsOffset(), cell.getTagsLength());
 
-      if (localFilterData.needRedactionJre(val, timestamp, currTime, tag))
+        if (localFilterData.needRedactionJre(val, timestamp, currTime, tag))
+        {
+          it.remove();
+        }
+      }
+      else
       {
         it.remove();
       }

@@ -14,9 +14,7 @@ import kmy.regex.util.RegexRefiller;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -47,58 +45,36 @@ public class FilterData implements HeapSize {
 
   public static final String REPLACEMENT_VAL = "[REDACTED]";
 
-  RegexRefiller refiller = new RegexRefiller() {
-    public int refill(Regex regex, int boundary) {
-      //System.out.println( "Refill: " + regex + " " + boundary );
-      char[] buffer = regex.getCharBuffer(-1);
-      if (buffer.length <= boundary) {
-        regex.setRefiller(null);
-        return boundary; // returning -1 here means "exit right away"
-      }
-      return boundary + 1;
-    }
-  };
 
-  static Regex createRegex(String patt) {
-    RNode regex = (new RParser()).parse(patt);
-    System.out.println(regex);
-    System.out.println("\tmin = " + regex.minLeft + " max = " +
-      (regex.maxLeft == Integer.MAX_VALUE ? "*" : "" + regex.maxLeft));
-    System.out.println("\tprefix: " + regex.findPrefix(CharSet.FULL_CHARSET));
-    System.out.println();
-    RDebugMachine debug = new RDebugMachine();
-    RCompiler dcomp = new RCompiler(debug);
-    dcomp.compile(regex, patt);
-    System.out.println("\t.stop");
+  SortedMap<byte[], FilterData> columnRules = new TreeMap<>(new ArrayComparator());
 
-    Regex re = null;
-
-    try {
-      RJavaClassMachine jmachine = new RJavaClassMachine();
-      jmachine.setSaveBytecode(true);
-      RCompiler jcomp = new RCompiler(jmachine);
-      jcomp.compile(regex, patt);
-      re = jmachine.makeRegex();
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-
-    return re;
-  }
-  public FilterData getReadColumnRules(String qualifier)
+  static class ArrayComparator implements Comparator<byte[]>
   {
-    return columnRules.get(qualifier);
+    @Override
+    public int compare(byte[] o1, byte[] o2) {
+
+      int result = 0;
+      int maxLength = Math.max(o1.length, o2.length);
+      for (int index = 0; index < maxLength; index++) {
+        int o1Value = index < o1.length ? o1[index] : 0;
+        int o2Value = index < o2.length ? o2[index] : 0;
+        int cmp     = Integer.compare(o1Value, o2Value);
+        if (cmp != 0) {
+          result = cmp;
+          break;
+        }
+      }
+      return result;
+
+    }
   }
 
 
-  public void setRedactionType(String redactionType) {
-    this.redactionType = RedactionType.valueOf(redactionType);
-  }
+
+//  public HashMap<String, FilterData> columnRules = new HashMap<>();
 
 
-
-  public HashMap<String, FilterData> columnRules = new HashMap<>();
-
+  private boolean forceFilter = false;
 
   private boolean needsInspection = false;
 
@@ -183,6 +159,67 @@ public class FilterData implements HeapSize {
       ((redactionDeniedAll == null) ? 0 : redactionDeniedAll.pattern().length() +
         ((redactionElasticPostFilterQueryStr == null) ? 0 : redactionElasticPostFilterQueryStr.length()));
   }
+
+  RegexRefiller refiller = new RegexRefiller() {
+    public int refill(Regex regex, int boundary) {
+      //System.out.println( "Refill: " + regex + " " + boundary );
+      char[] buffer = regex.getCharBuffer(-1);
+      if (buffer.length <= boundary) {
+        regex.setRefiller(null);
+        return boundary; // returning -1 here means "exit right away"
+      }
+      return boundary + 1;
+    }
+  };
+
+  static Regex createRegex(String patt) {
+    RNode regex = (new RParser()).parse(patt);
+    System.out.println(regex);
+    System.out.println("\tmin = " + regex.minLeft + " max = " +
+        (regex.maxLeft == Integer.MAX_VALUE ? "*" : "" + regex.maxLeft));
+    System.out.println("\tprefix: " + regex.findPrefix(CharSet.FULL_CHARSET));
+    System.out.println();
+    RDebugMachine debug = new RDebugMachine();
+    RCompiler dcomp = new RCompiler(debug);
+    dcomp.compile(regex, patt);
+    System.out.println("\t.stop");
+
+    Regex re = null;
+
+    try {
+      RJavaClassMachine jmachine = new RJavaClassMachine();
+      jmachine.setSaveBytecode(true);
+      RCompiler jcomp = new RCompiler(jmachine);
+      jcomp.compile(regex, patt);
+      re = jmachine.makeRegex();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+
+    return re;
+  }
+  public FilterData getReadColumnRules(byte[] qualifier)
+  {
+    return columnRules.get(qualifier);
+  }
+
+
+  public void setRedactionType(String redactionType) {
+    this.redactionType = RedactionType.valueOf(redactionType);
+  }
+
+
+  public boolean isForceFilter()
+  {
+    return forceFilter;
+  }
+
+  public void setForceFilter(boolean forceFilter)
+  {
+    this.forceFilter = forceFilter;
+  }
+
+
   public boolean getNeedsInspection()
   {
     return needsInspection;
@@ -320,13 +357,16 @@ public class FilterData implements HeapSize {
         Long redactionDeltaTimeMs = (val == null)? -1L: val.asLong(-1L);
 
 
+
         val = entryVal.get("redactionTagRegex");
         String redactionTagRegex = (val == null)? null: val.asText();
 
         FilterData colFilterData = new FilterData(redactionAllowedRegex,redactionDeniedRegex,redactionDeniedAllRegex,redactionType,redactionDeltaTimeMs,redactionTagRegex);
 
+        val = entryVal.get("forceFilter");
+        this.setForceFilter((val == null)? false: val.asBoolean());
 
-        columnRules.put(entry.getKey(), colFilterData);
+        columnRules.put(Bytes.toBytes( entry.getKey()), colFilterData);
       }
 
     }
