@@ -43,42 +43,36 @@ public class PolicyNotifier {
 
     conf.putAll(System.getProperties());
 
-
     producer = new KafkaProducer<>(conf);
 
-    long lastReadTxid = 0;
-
-    if (args.length > 1) {
-      lastReadTxid = Long.parseLong(args[1]);
+    String path = null;
+    if (args.length == 1) {
+      path = args[0];
     }
+    else {
+      path = System.getProperty( "pontus.redaction.policy.store.uri",    System.getProperty("hbase.rootdir", "hdfs://sandbox.hortonworks.com:8020/apps/hbase/data"));
+      if (path.startsWith("/")){
+        path = "file://"+path;
+      }
+      path += ACL_READ_SUBPATH;
+    }
+    System.out.println("Using the following path:" + path);
 
 
     final Configuration config = new Configuration(false);
     config.addResource(new Path("/usr/hdp/current/hadoop-client/conf/core-site.xml"));
     config.addResource(new Path("/usr/hdp/current/hadoop-client/conf/hdfs-site.xml"));
+    config.addResource(new Path("/opt/pontus/pontus-hbase/current/conf/core-site.xml"));
+    config.addResource(new Path("/opt/pontus/pontus-hbase/current/conf/hdfs-site.xml"));
 
     config.set("hadoop.security.authentication", "Kerberos");
 
-    config.set("fs.hdfs.impl", "org.apache.hadoop.hdfs.DistributedFileSystem");
-    config.set("fs.file.impl", "org.apache.hadoop.fs.LocalFileSystem");
-
-    final URI uri = URI.create(conf.getProperty("hbase.rootdir", "hdfs://sandbox.hortonworks.com:8020/apps/hbase/data"));
-
-    config.set("fs.hdfs.impl", "org.apache.hadoop.hdfs.DistributedFileSystem");
-    config.set("fs.file.impl", "org.apache.hadoop.fs.LocalFileSystem");
-
     topicStr = config.get(KafkaConfig.KAFKA_TOPIC_CONF, KafkaConfig.KAFKA_TOPIC_POLLCY_CHANGE_DEFVAL);
 
-    final String relevantPath = uri.getPath() + ACL_READ_SUBPATH;
+//    final String relevantPath = uri.getPath() + ACL_READ_SUBPATH;
     try {
-//      UserGroupInformation.setConfiguration(config);
-//      UserGroupInformation userGroupInformation =
-//        UserGroupInformation.loginUserFromKeytabAndReturnUGI(conf.getProperty("redaction.loginuser.kerb.princ", "hdfs-sandbox@YOUR_REALM_GOES_HERE"),
-//          conf.getProperty("redaction.loginuser.kerb.keytab", "/etc/security/keytabs/hdfs.headless.keytab"));
-//      UserGroupInformation.setLoginUser(userGroupInformation);
-
       String key = "path";
-      String val = args[0];
+      String val =  path;
       producer.send(new ProducerRecord<String, String>(topicStr, key, val));
       producer.flush();
 
