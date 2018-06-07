@@ -227,9 +227,11 @@ public class FilterData implements HeapSize {
 
   public void setNeedsInspection()
   {
-    this.needsInspection = (redactionAllowedStr == null? false : !".*".equals(redactionAllowedStr.trim())) ||
+    this.needsInspection =
+        this.forceFilter ||
+        ((redactionAllowedStr == null? false : !".*".equals(redactionAllowedStr.trim())) ||
         (redactionDeniedStr == null? false : !"(?!x)x".equals(redactionDeniedStr.trim())) ||
-        (redactionDeniedAllStr == null? false : !"(?!x)x".equals(redactionDeniedAllStr));
+        (redactionDeniedAllStr == null? false : !"(?!x)x".equals(redactionDeniedAllStr)));
   }
 
   public boolean needRedactionDkb(String val) {
