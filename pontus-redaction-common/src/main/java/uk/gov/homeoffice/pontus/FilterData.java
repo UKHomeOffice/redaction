@@ -371,6 +371,8 @@ public class FilterData implements HeapSize {
         columnRules.put(Bytes.toBytesBinary( entry.getKey()), colFilterData);
       }
 
+      setNeedsInspection();
+
     }
     catch (Exception e){
 
