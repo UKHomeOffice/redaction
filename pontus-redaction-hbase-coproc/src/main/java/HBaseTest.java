@@ -38,9 +38,9 @@ public class HBaseTest extends Configured implements Tool {
 //    private static final byte[] CF = Bytes.toBytes("cf1");
     public void printUsage() {
         System.out.println("This tool inserts data into hbase. Usage:\n\n" +
-                " java -cp /opt/pontus/pontus-hbase-coprocessor-atlas-0.0.1-SNAPSHOT.jar HBaseTest " +
+                " java -cp /opt/pontus/pontus-hbase-coprocessor-0.99.0.jar HBaseTest " +
                 "<table:row:colFamily:col> <val> <metadata>\n\n  Example:\n\n" +
-                "java -cp /opt/pontus/pontus-hbase-coprocessor-atlas-0.0.1-SNAPSHOT.jar HBaseTest " +
+                "java -cp /opt/pontus/pontus-hbase-coprocessor-0.99.0.jar HBaseTest " +
                 "driver_dangerous_event:1:events:driverId 2222 /uk.gov.police/investigators\n\n");
     }
 

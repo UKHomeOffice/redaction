@@ -98,7 +98,7 @@ cluster.name: pontus
 network.host: 172.17.0.2
 EOF
 
-printf '\nES_CLASSPATH="/opt/pontus/pontus-redaction-elastic-2.x-shield-0.0.1-SNAPSHOT.jar:$ES_HOME/lib/*:$ES_HOME/plugins/elasticsearch-shield-kerberos-realm/*:$ES_HOME/plugins/license/*:$ES_HOME/plugins/shield/*"' >> /opt/elasticsearch-2.4.3-shield/bin/elasticsearch.in.sh
+printf '\nES_CLASSPATH="/opt/pontus/pontus-redaction-elastic-2.x-shield-0.99.0.jar:$ES_HOME/lib/*:$ES_HOME/plugins/elasticsearch-shield-kerberos-realm/*:$ES_HOME/plugins/license/*:$ES_HOME/plugins/shield/*"' >> /opt/elasticsearch-2.4.3-shield/bin/elasticsearch.in.sh
 # add the following to the .bash_profile:
 echo 'export ES_JAVA_OPTS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=61888  -DauthenticationPlugin=org.apache.solr.security.KerberosPlugin  -Djava.security.krb5.realm=YOUR_REALM_GOES_HERE  -Djava.security.krb5.kdc=sandbox.hortonworks.com  -Djavax.security.auth.useSubjectCredsOnly=false  -Djava.security.auth.login.config=/home/solr/solr_jaas.conf  -Dsolr.kerberos.principal=HTTP/sandbox.hortonworks.com@YOUR_REALM_GOES_HERE  -Dsolr.kerberos.keytab=/etc/security/keytabs/spnego.service.keytab -Dsolr.kerberos.cookie.domain=sandbox.hortonworks.com  -Dhost=sandbox.hortonworks.com  -Dsun.security.spnego.debug=true  -Dsun.security.krb5.debug=true  -Dsun.security.jgss.debug=true  -Dsun.security.spnego.msinterop=true  -Dhadoop.security.authentication=kerberos -Djava.security.auth.login.config=/opt/pontus/jaas_policy_store.conf  -Dhadoop.security.authentication=kerberos -Dhadoop.security.authorization=true  -Dgroup.id=solr_sandbox.hortonworks.com  -Dsolr.kerberos.name.rules=DEFAULT -Dpontus.enablePlugin=true"'>> ~elastic/.bash_profile
 
@@ -137,7 +137,7 @@ wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-5.0.2.ta
 tar xvf elasticsearch-5.0.2.tar.gz
 ln -s elasticsearch-5.0.2 elasticsearch
 chown -R elastic:hadoop /opt/elasticsearch-5.0.2
-printf '\nES_CLASSPATH="/opt/pontus/pontus-redaction-elastic-5.x-searchguard-0.0.1-SNAPSHOT.jar:$ES_HOME/lib/*:$ES_HOME/plugins/search-guard-5/*"' >> /opt/elasticsearch/bin/elasticsearch.in.sh
+printf '\nES_CLASSPATH="/opt/pontus/pontus-redaction-elastic-5.x-searchguard-0.99.0.jar:$ES_HOME/lib/*:$ES_HOME/plugins/search-guard-5/*"' >> /opt/elasticsearch/bin/elasticsearch.in.sh
 # add the following to the .bash_profile:
 echo 'export ES_JAVA_OPTS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=61888  -DauthenticationPlugin=org.apache.solr.security.KerberosPlugin  -Djava.security.krb5.realm=YOUR_REALM_GOES_HERE  -Djava.security.krb5.kdc=sandbox.hortonworks.com  -Djavax.security.auth.useSubjectCredsOnly=false  -Djava.security.auth.login.config=/home/solr/solr_jaas.conf  -Dsolr.kerberos.principal=HTTP/sandbox.hortonworks.com@YOUR_REALM_GOES_HERE  -Dsolr.kerberos.keytab=/etc/security/keytabs/spnego.service.keytab -Dsolr.kerberos.cookie.domain=sandbox.hortonworks.com  -Dhost=sandbox.hortonworks.com  -Dsun.security.spnego.debug=true  -Dsun.security.krb5.debug=true  -Dsun.security.jgss.debug=true  -Dsun.security.spnego.msinterop=true  -Dhadoop.security.authentication=kerberos -Djava.security.auth.login.config=/opt/pontus/jaas_policy_store.conf  -Dhadoop.security.authentication=kerberos -Dhadoop.security.authorization=true  -Dgroup.id=solr_sandbox.hortonworks.com  -Dsolr.kerberos.name.rules=DEFAULT -Dpontus.enablePlugin=true"'>> ~elastic/.bash_profile
 

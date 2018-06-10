@@ -2,33 +2,6 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 
-	<!-- project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-		xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"> 
-		<modelVersion>4.0.0</modelVersion> <groupId>pontus-hbase-coprocessor</groupId> 
-		<artifactId>pontus-hbase-coprocessor-atlas</artifactId> <version>0.0.1-SNAPSHOT</version> 
-		<packaging>jar</packaging> <name>pontus-hbase-coprocessor-atlas</name> <properties> 
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding> <hbase.version>1.1.4</hbase.version> 
-		</properties> <repositories> <repository> <id>HDP repos</id> <url>http://repo.hortonworks.com/content/groups/public/</url> 
-		</repository> </repositories> <dependencies> <dependency> <groupId>junit</groupId> 
-		<artifactId>junit</artifactId> <version>4.10</version> <scope>test</scope> 
-		</dependency> <dependency> <groupId>org.apache.kafka</groupId> <artifactId>kafka-clients</artifactId> 
-		<version>0.10.0.1</version> </dependency> <dependency> <groupId>org.apache.hbase</groupId> 
-		<artifactId>hbase-common</artifactId> <version>${hbase.version}</version> 
-		<exclusions> <exclusion> <artifactId>jdk.tools</artifactId> <groupId>jdk.tools</groupId> 
-		</exclusion> </exclusions> </dependency> <dependency> <groupId>org.apache.hbase</groupId> 
-		<artifactId>hbase-client</artifactId> <version>${hbase.version}</version> 
-		<exclusions> <exclusion> <artifactId>jdk.tools</artifactId> <groupId>jdk.tools</groupId> 
-		</exclusion> </exclusions> </dependency> <dependency> <groupId>org.apache.hbase</groupId> 
-		<artifactId>hbase-server</artifactId> <version>${hbase.version}</version> 
-		<exclusions> <exclusion> <artifactId>jdk.tools</artifactId> <groupId>jdk.tools</groupId> 
-		</exclusion> </exclusions> </dependency> </dependencies> <build> <plugins> 
-		<plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-compiler-plugin</artifactId> 
-		<version>2.3.2</version> <configuration> <source>1.7</source> <target>1.7</target> 
-		<compilerArgument>-Xlint:all</compilerArgument> <showWarnings>true</showWarnings> 
-		<showDeprecation>false</showDeprecation> </configuration> </plugin> </plugins> 
-		</build> </project -->
-
-
 
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>pontus-redaction</groupId>
@@ -59,7 +32,7 @@
 
 	<properties>
 
-		<redaction.version>0.0.1-SNAPSHOT</redaction.version>
+		<redaction.version>0.99.0</redaction.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
 		<provided.scope>provided</provided.scope>

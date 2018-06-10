@@ -24,7 +24,7 @@ create table "driver_dangerous_event" ("row" VARCHAR primary key,"events"."drive
 ```
 2) copy redaction jar files in /opt/pontus, and into hdfs:
 ```
-hadoop fs -copyFromLocal /opt/pontus/pontus-redaction-hbase-coproc-0.0.1-SNAPSHOT.jar /apps/hbase
+hadoop fs -copyFromLocal /opt/pontus/pontus-redaction-hbase-coproc-0.99.0.jar /apps/hbase
 ```
 
 3) create the redaction rules files and directories:
@@ -67,13 +67,13 @@ alter 'driver_dangerous_event', METHOD => 'table_att_unset', NAME => 'coprocesso
 alter 'driver_dangerous_event', METHOD => 'table_att_unset', NAME => 'coprocessor$3'
 alter 'driver_dangerous_event', METHOD => 'table_att_unset', NAME => 'coprocessor$4'
 alter 'driver_dangerous_event', METHOD => 'table_att_unset', NAME => 'coprocessor$5'
-alter 'driver_dangerous_event', 'coprocessor'=>'hdfs:///apps/hbase/pontus-redaction-hbase-coproc-0.0.1-SNAPSHOT.jar|uk.gov.homeoffice.pontus.hbase.coprocessor.pole.security.PoleSecurityCoprocessorMetadataOnly|1001'
+alter 'driver_dangerous_event', 'coprocessor'=>'hdfs:///apps/hbase/pontus-redaction-hbase-coproc-0.99.0.jar|uk.gov.homeoffice.pontus.hbase.coprocessor.pole.security.PoleSecurityCoprocessorMetadataOnly|1001'
 alter 'driver_dangerous_event', 'coprocessor'=>'|org.apache.phoenix.coprocessor.ScanRegionObserver|805306366|'
 alter 'driver_dangerous_event', 'coprocessor'=>'|org.apache.phoenix.coprocessor.UngroupedAggregateRegionObserver|805306366|'
 alter 'driver_dangerous_event', 'coprocessor'=>'|org.apache.phoenix.coprocessor.GroupedAggregateRegionObserver|805306366|'
 alter 'driver_dangerous_event', 'coprocessor'=>'|org.apache.phoenix.coprocessor.ServerCachingEndpointImpl|805306366|'
 alter 'driver_dangerous_event', 'coprocessor'=>'|org.apache.phoenix.hbase.index.Indexer|805306366|org.apache.hadoop.hbase.index.codec.class=org.apache.phoenix.index.PhoenixIndexCodec,index.builder=org.apache.phoenix.index.PhoenixIndexBuilder'
-alter 'driver_dangerous_event', 'coprocessor'=>'hdfs:///apps/hbase/pontus-redaction-hbase-coproc-0.0.1-SNAPSHOT.jar|uk.gov.homeoffice.pontus.hbase.coprocessor.pole.security.PoleSecurityCoprocessorRedactOnly|805306367'
+alter 'driver_dangerous_event', 'coprocessor'=>'hdfs:///apps/hbase/pontus-redaction-hbase-coproc-0.99.0.jar|uk.gov.homeoffice.pontus.hbase.coprocessor.pole.security.PoleSecurityCoprocessorRedactOnly|805306367'
 
 
 ```
@@ -81,16 +81,24 @@ alter 'driver_dangerous_event', 'coprocessor'=>'hdfs:///apps/hbase/pontus-redact
 
 5) Add JWT credentials:
 ```
-java -cp /opt/pontus/pontus-redaction-hbase-coproc-0.0.1-SNAPSHOT.jar JWTStoreClient hbase '{ "jwtClaim": "/uk.manager/special" }'
-java -cp /opt/pontus/pontus-redaction-hbase-coproc-0.0.1-SNAPSHOT.jar JWTStoreClient leo '{ "jwtClaim": "/uk.manager/special" }'
+java -cp /opt/pontus/pontus-redaction-hbase-coproc-0.99.0.jar JWTStoreClient hbase '{ "jwtClaim": "/uk.manager/special" }'
+java -cp /opt/pontus/pontus-redaction-hbase-coproc-0.99.0.jar JWTStoreClient leo '{ "jwtClaim": "/uk.manager/special" }'
 
-java -cp /opt/pontus/pontus-redaction-hbase-coproc-0.0.1-SNAPSHOT.jar JWTStoreClient /jwt/users/leo/admin@YOUR_REALM_GOES_HERE '{ "jwtClaim": "/uk.manager/special" }'
+java -cp /opt/pontus/pontus-redaction-hbase-coproc-0.99.0.jar JWTStoreClient /jwt/users/leo/admin@YOUR_REALM_GOES_HERE '{ "jwtClaim": "/uk.manager/special" }'
+
+
 ```
 
 6) Optionally, start the HDFSNotifier, which will send Kafka messages to the redaction layer whenever there is a change of the redaction rules in HDFS (NOTE, use this for testing only):
 
 ```
-java -cp /opt/pontus/pontus-redaction-hbase-coproc-0.0.1-SNAPSHOT.jar -Djava.security.auth.login.config=/opt/pontus/jaas_policy_store.conf  -Dhadoop.security.authentication=kerberos -Dhadoop.security.authorization=true  -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=61888   HDFSNotifier
+java -cp /opt/pontus/pontus-redaction-hbase-coproc-0.99.0.jar -Djava.security.auth.login.config=/opt/pontus/jaas_policy_store.conf  -Dhadoop.security.authentication=kerberos -Dhadoop.security.authorization=true  -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=61888   HDFSNotifier
+
+or 
+
+Manually send a notification via Kafka:
+java -Djava.security.auth.login.config=/opt/pontus/pontus-hbase/current/conf/hbase-kafka-jaas.conf -cp /opt/pontus/pontus-redaction/current/lib/pontus-redaction-hbase-coproc-0.0.1-SNAPSHOT.jar:opt/pontus/pontus-hbase/current/conf -Dpontus.redaction.zk=`hostname -f`:2181 -Dbootstrap.servers=`hostname -f`:9092 -Dssl.keystore.location=/etc/pki/java/localhost.jks -Dssl.keystore.password=pa55word -Dssl.truststore.location=/etc/pki/java/truststore.jks -Dssl.truststore.password=changeit  PolicyNotifier /tmp/hbase-root/hbase/acls/read/superuser/metadata
+
 ```
 
 7) Back in the hbase cli, add a few metadata entries:
