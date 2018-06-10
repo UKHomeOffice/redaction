@@ -1,6 +1,6 @@
 #!/bin/bash
 DIR="$( cd "$(dirname "$0")" ; pwd -P )"
-VERSION=0.0.1-SNAPSHOT
+VERSION=0.99.0
 echo DIR is $DIR
 export DISTDIR="$DIR/../pontus-dist/opt/pontus/pontus-redaction/pontus-redaction-$VERSION";
 
