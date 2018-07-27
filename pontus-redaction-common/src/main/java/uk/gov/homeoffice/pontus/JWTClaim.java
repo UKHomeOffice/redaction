@@ -3,6 +3,8 @@ package uk.gov.homeoffice.pontus;
 import com.google.gson.Gson;
 import org.apache.hadoop.util.Time;
 
+import java.util.List;
+
 public class JWTClaim implements HeapSize {
 
     static Gson gson = new Gson();
@@ -26,6 +28,8 @@ public class JWTClaim implements HeapSize {
     protected long startTimeMs = 0;
     protected long exp = 0;
 
+
+    protected List<String> groups = null;
 
     public JWTClaim() {
     }
@@ -53,6 +57,13 @@ public class JWTClaim implements HeapSize {
 
     public void setIss(String iss) {
         this.iss = iss;
+    }
+
+
+    public List<String> getGroups() { return groups; }
+    public void setGroups(List<String> groups)
+    {
+        this.groups = groups;
     }
 
 
