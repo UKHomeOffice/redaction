@@ -26,7 +26,9 @@ cp -r $DIR/*/target/pontus*jar $DISTDIR/lib
 
 cd ..
 
-unlink current
+if [[ -f current ]]; then
+  unlink current
+fi
 ln -s pontus-redaction-$VERSION current
 
 cd $CURDIR
